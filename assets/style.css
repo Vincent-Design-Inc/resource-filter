@@ -1,0 +1,13 @@
+#resource-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+#resource-filter input,
+#resource-filter select,
+#resource-filter button {
+  border: 1px solid #ccc;
+  font-size: 16px;
+  padding: 8px;
+}
