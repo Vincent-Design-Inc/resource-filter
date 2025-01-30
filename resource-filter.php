@@ -74,65 +74,12 @@ class ResourceFilterPlugin {
   public function filterResources() {
     check_ajax_referer('resource_filter_nonce', 'nonce');
 
-    // $query_args = [
-    //   'post_type' => 'resource',
-    //   'posts_per_page' => -1,
-    //   'tax_query' => [],
-    //   's' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
-    // ];
-
-    $search_term = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
-
     $query_args = [
       'post_type' => 'resource',
       'posts_per_page' => -1,
-      'tax_query' => ['relation' => 'OR'], // Allows matching by search OR taxonomy
-      'meta_query' => [
-        'relation' => 'OR',
-        [
-          'key' => 'post_title',
-          'value' => $search_term,
-          'compare' => 'LIKE'
-        ],
-        [
-          'key' => 'post_content',
-          'value' => $search_term,
-          'compare' => 'LIKE'
-        ]
-      ]
+      'tax_query' => [],
+      's' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
     ];
-
-    if (!empty($search_term)) {
-      $query_args['tax_query'][] = [
-        'taxonomy' => 'resource_type',
-        'field' => 'name', // Search by the name of the taxonomy term
-        'terms' => $search_term,
-        'operator' => 'LIKE'
-      ];
-
-      $query_args['tax_query'][] = [
-        'taxonomy' => 'resource_subject',
-        'field' => 'name',
-        'terms' => $search_term,
-        'operator' => 'LIKE'
-      ];
-    }
-
-    if (!empty($_POST['resource_type'])) {
-      $query_args['tax_query'][] = [
-        'taxonomy' => 'resource_type',
-        'field' => 'slug',
-        'terms' => sanitize_text_field($_POST['resource_type'])
-      ];
-    }
-
-    if (!empty($_POST['resource_subject'])) {
-      $query_args['tax_query'][] = [
-        'taxonomy' => 'resource_subject',
-        'field' => 'slug',
-        'terms' => sanitize_text_field($_POST['resource_subject'])
-      ];
-    }
 
     if (!empty($_POST['resource_type']) || !empty($_POST['resource_subject'])) {
       $query_args['tax_query']['relation'] = 'AND';
@@ -167,8 +114,6 @@ class ResourceFilterPlugin {
     } else {
       echo '<p>No resources found.</p>';
     }
-
-    print_r($query_args);
 
     wp_reset_postdata();
 
