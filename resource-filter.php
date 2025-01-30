@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Resource Filter
- * Description: Adds filtering for the 'resources' post type by 'resource_type' and 'resource_subject'.
+ * Description: Adds filtering for the 'resource' post type by 'resource_type' and 'resource_subject'.
  * Version: 1.0
  * Author: Keith Solomon
  */
@@ -57,9 +57,16 @@ class ResourceFilterPlugin {
       <button type="submit">Filter</button>
     </form>
 
+    <!-- Filter summary section -->
+    <div id="resource-filter-summary">
+      <strong>Showing <span id="result-count">0</span> resources</strong>
+      <p>Filters applied: <span id="applied-filters">None</span></p>
+    </div>
+
     <div id="resource-results">
       <?php $this->loadResources(); ?>
     </div>
+
     <?php
     return ob_get_clean();
   }
@@ -67,15 +74,68 @@ class ResourceFilterPlugin {
   public function filterResources() {
     check_ajax_referer('resource_filter_nonce', 'nonce');
 
+    // $query_args = [
+    //   'post_type' => 'resource',
+    //   'posts_per_page' => -1,
+    //   'tax_query' => [],
+    //   's' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+    // ];
+
+    $search_term = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+
     $query_args = [
       'post_type' => 'resource',
       'posts_per_page' => -1,
-      'tax_query' => [],
-      's' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+      'tax_query' => ['relation' => 'OR'], // Allows matching by search OR taxonomy
+      'meta_query' => [
+        'relation' => 'OR',
+        [
+          'key' => 'post_title',
+          'value' => $search_term,
+          'compare' => 'LIKE'
+        ],
+        [
+          'key' => 'post_content',
+          'value' => $search_term,
+          'compare' => 'LIKE'
+        ]
+      ]
     ];
 
+    if (!empty($search_term)) {
+      $query_args['tax_query'][] = [
+        'taxonomy' => 'resource_type',
+        'field' => 'name', // Search by the name of the taxonomy term
+        'terms' => $search_term,
+        'operator' => 'LIKE'
+      ];
+
+      $query_args['tax_query'][] = [
+        'taxonomy' => 'resource_subject',
+        'field' => 'name',
+        'terms' => $search_term,
+        'operator' => 'LIKE'
+      ];
+    }
+
+    if (!empty($_POST['resource_type'])) {
+      $query_args['tax_query'][] = [
+        'taxonomy' => 'resource_type',
+        'field' => 'slug',
+        'terms' => sanitize_text_field($_POST['resource_type'])
+      ];
+    }
+
+    if (!empty($_POST['resource_subject'])) {
+      $query_args['tax_query'][] = [
+        'taxonomy' => 'resource_subject',
+        'field' => 'slug',
+        'terms' => sanitize_text_field($_POST['resource_subject'])
+      ];
+    }
+
     if (!empty($_POST['resource_type']) || !empty($_POST['resource_subject'])) {
-      $query_args['tax_query']['relation'] = 'AND'; // Ensures both must match
+      $query_args['tax_query']['relation'] = 'AND';
 
       if (!empty($_POST['resource_type'])) {
         $query_args['tax_query'][] = [
@@ -94,9 +154,36 @@ class ResourceFilterPlugin {
       }
     }
 
-    error_log(print_r($query_args, true)); // Add this to debug query args
+    $query = new WP_Query($query_args);
+    ob_start();
 
-    $this->loadResources($query_args);
+    if ($query->have_posts()) {
+      echo '<div class="resource-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+      while ($query->have_posts()) {
+        $query->the_post();
+        echo '<div class="resource-item"><a href="' . get_permalink() . '">' . get_the_title() . '</a></div>';
+      }
+      echo '</div>';
+    } else {
+      echo '<p>No resources found.</p>';
+    }
+
+    print_r($query_args);
+
+    wp_reset_postdata();
+
+    // Prepare response JSON
+    $response = [
+      'count' => $query->found_posts,
+      'filters' => [
+        'search' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+        'resource_type' => !empty($_POST['resource_type']) ? sanitize_text_field($_POST['resource_type']) : '',
+        'resource_subject' => !empty($_POST['resource_subject']) ? sanitize_text_field($_POST['resource_subject']) : ''
+      ],
+      'html' => ob_get_clean()
+    ];
+
+    echo json_encode($response);
     wp_die();
   }
 
@@ -104,12 +191,12 @@ class ResourceFilterPlugin {
     $query = new WP_Query($query_args);
 
     if ($query->have_posts()) {
-      echo '<ul>';
+      echo '<div class="resource-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
       while ($query->have_posts()) {
         $query->the_post();
-        echo '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
+        echo '<div class="resource-item"><a href="' . get_permalink() . '">' . get_the_title() . '</a></div>';
       }
-      echo '</ul>';
+      echo '</div>';
     } else {
       echo '<p>No resources found.</p>';
     }
