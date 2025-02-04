@@ -11,6 +11,15 @@ if (!defined('ABSPATH')) { exit; } // Prevent direct access
 require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
 
 class ResourceFilterPlugin {
+  /**
+   * Registers the necessary actions and filters.
+   *
+   * Adds a shortcode handler for the 'resource_filter' shortcode.
+   * Enqueues the necessary scripts and styles.
+   * Adds an AJAX handler for filtering resources.
+   *
+   * @since 1.0.0
+   */
   public function __construct() {
     add_shortcode('resource_filter', [$this, 'renderFilterForm']);
     add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
@@ -18,6 +27,15 @@ class ResourceFilterPlugin {
     add_action('wp_ajax_nopriv_filter_resources', [$this, 'filterResources']);
   }
 
+/**
+ * Enqueues the necessary scripts and styles for the resource filter.
+ *
+ * Checks if the 'resource_filter' shortcode is present on the page before loading.
+ * Includes a CSS style and a JavaScript file specific to the plugin.
+ * Localizes the script with AJAX URL and nonce for secure AJAX requests.
+ *
+ * @since 1.0.0
+ */
   public function enqueueScripts() {
     // Load script only if the shortcode is present on the page
     if (!is_admin() && has_shortcode(get_post_field('post_content', get_the_ID()), 'resource_filter')) {
@@ -31,6 +49,17 @@ class ResourceFilterPlugin {
     }
   }
 
+/**
+ * Renders the resource filter form.
+ *
+ * Loads the filter form template and displays a summary of the total resources.
+ * Displays the number of resources and applied filters.
+ * Calls the loadResources method to display the initial list of resources.
+ *
+ * @return string The HTML output of the filter form and resource list.
+ *
+ * @since 1.0.0
+ */
   public function renderFilterForm() {
     ob_start();
 
@@ -47,7 +76,7 @@ class ResourceFilterPlugin {
 
     <div id="resource-filter-summary">
       <strong>Showing <span id="result-count"><?php echo $total_resources; ?></span> resources</strong>
-      <p><strong>Filters applied:</strong>  <span id="applied-filters">None</span></p>
+      <p><strong>Filters applied:</strong> <span id="applied-filters">None</span></p>
     </div>
 
     <div id="resource-results">
@@ -58,6 +87,43 @@ class ResourceFilterPlugin {
     return ob_get_clean();
   }
 
+  /**
+   * Load and display resources.
+   *
+   * @return void
+   *
+   * @since 1.0.0
+   */
+  public function loadResources() {
+    $query_args = [
+      'post_type' => 'resource',
+      'posts_per_page' => -1
+    ];
+
+    $query = new WP_Query($query_args);
+    $resources = $query->posts;
+
+    $template = rfGetTemplate('resource-results.php');
+
+    if ($template) {
+      include_once $template;
+    } else {
+      echo '<p>Error: Results template not found.</p>';
+    }
+
+    wp_reset_postdata();
+  }
+
+  /**
+   * AJAX handler for filtering resources.
+   *
+   * Searches for resources based on search term, resource type, and/or resource subject.
+   * Returns a JSON response with the count of resources found and the HTML for the resource results.
+   *
+   * Verifies the nonce and sanitizes the input data.
+   *
+   * @since 1.0.0
+   */
   public function filterResources() {
     check_ajax_referer('resource_filter_nonce', 'nonce');
 
@@ -121,26 +187,6 @@ class ResourceFilterPlugin {
 
     echo json_encode($response);
     wp_die();
-  }
-
-  public function loadResources() {
-    $query_args = [
-      'post_type' => 'resource',
-      'posts_per_page' => -1
-    ];
-
-    $query = new WP_Query($query_args);
-    $resources = $query->posts;
-
-    $template = rfGetTemplate('resource-results.php');
-
-    if ($template) {
-      include_once $template;
-    } else {
-      echo '<p>Error: Results template not found.</p>';
-    }
-
-    wp_reset_postdata();
   }
 }
 
