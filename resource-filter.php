@@ -47,7 +47,7 @@ class ResourceFilterPlugin {
 
     <div id="resource-filter-summary">
       <strong>Showing <span id="result-count"><?php echo $total_resources; ?></span> resources</strong>
-      <p>Filters applied: <span id="applied-filters">None</span></p>
+      <p><strong>Filters applied:</strong>  <span id="applied-filters">None</span></p>
     </div>
 
     <div id="resource-results">
@@ -71,19 +71,19 @@ class ResourceFilterPlugin {
     $tax_query = [];
 
     if (!empty($_POST['resource_type'])) {
-      $tax_query[] = [
+      $query_args['tax_query'][] = [
         'taxonomy' => 'resource_type',
-        'field' => 'slug',
-        'terms' => [sanitize_text_field($_POST['resource_type'])], // Ensure it's an array
+        'field'    => 'slug',
+        'terms'    => array_map('sanitize_text_field', $_POST['resource_type']),
         'operator' => 'IN'
       ];
     }
 
     if (!empty($_POST['resource_subject'])) {
-      $tax_query[] = [
+      $query_args['tax_query'][] = [
         'taxonomy' => 'resource_subject',
-        'field' => 'slug',
-        'terms' => [sanitize_text_field($_POST['resource_subject'])],
+        'field'    => 'slug',
+        'terms'    => array_map('sanitize_text_field', $_POST['resource_subject']),
         'operator' => 'IN'
       ];
     }
