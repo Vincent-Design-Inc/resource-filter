@@ -8,6 +8,8 @@
 
 if (!defined('ABSPATH')) { exit; } // Prevent direct access
 
+require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
+
 class ResourceFilterPlugin {
   public function __construct() {
     add_shortcode('resource_filter', [$this, 'renderFilterForm']);
@@ -31,35 +33,20 @@ class ResourceFilterPlugin {
 
   public function renderFilterForm() {
     ob_start();
+
+    $template = rfGetTemplate('filter-form.php');
+
+    if ($template) {
+      include_once $template;
+    } else {
+      echo '<p>Error: Template not found.</p>';
+    }
+
+    $total_resources = wp_count_posts('resource')->publish; // Get the count of published resources
     ?>
-    <form id="resource-filter">
-      <input type="text" id="search" name="search" placeholder="Search resources...">
 
-      <?php
-      $types = get_terms(['taxonomy' => 'resource_type', 'hide_empty' => true]);
-      $subjects = get_terms(['taxonomy' => 'resource_subject', 'hide_empty' => true]);
-      ?>
-
-      <select id="resource_type" name="resource_type">
-        <option value="">All Types</option>
-        <?php foreach ($types as $type) : ?>
-          <option value="<?php echo esc_attr($type->slug); ?>"><?php echo esc_html($type->name); ?></option>
-        <?php endforeach; ?>
-      </select>
-
-      <select id="resource_subject" name="resource_subject">
-        <option value="">All Subjects</option>
-        <?php foreach ($subjects as $subject) : ?>
-          <option value="<?php echo esc_attr($subject->slug); ?>"><?php echo esc_html($subject->name); ?></option>
-        <?php endforeach; ?>
-      </select>
-
-      <button type="submit">Filter</button>
-    </form>
-
-    <!-- Filter summary section -->
     <div id="resource-filter-summary">
-      <strong>Showing <span id="result-count">0</span> resources</strong>
+      <strong>Showing <span id="result-count"><?php echo $total_resources; ?></span> resources</strong>
       <p>Filters applied: <span id="applied-filters">None</span></p>
     </div>
 
@@ -75,47 +62,51 @@ class ResourceFilterPlugin {
     check_ajax_referer('resource_filter_nonce', 'nonce');
 
     $query_args = [
-      'post_type' => 'resource',
+      'post_type'      => 'resource',
       'posts_per_page' => -1,
-      'tax_query' => [],
-      's' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+      'tax_query'      => [],
+      's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
     ];
 
-    if (!empty($_POST['resource_type']) || !empty($_POST['resource_subject'])) {
-      $query_args['tax_query']['relation'] = 'AND';
+    $tax_query = [];
 
-      if (!empty($_POST['resource_type'])) {
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'resource_type',
-          'field' => 'slug',
-          'terms' => sanitize_text_field($_POST['resource_type'])
-        ];
-      }
+    if (!empty($_POST['resource_type'])) {
+      $tax_query[] = [
+        'taxonomy' => 'resource_type',
+        'field' => 'slug',
+        'terms' => [sanitize_text_field($_POST['resource_type'])], // Ensure it's an array
+        'operator' => 'IN'
+      ];
+    }
 
-      if (!empty($_POST['resource_subject'])) {
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'resource_subject',
-          'field' => 'slug',
-          'terms' => sanitize_text_field($_POST['resource_subject'])
-        ];
-      }
+    if (!empty($_POST['resource_subject'])) {
+      $tax_query[] = [
+        'taxonomy' => 'resource_subject',
+        'field' => 'slug',
+        'terms' => [sanitize_text_field($_POST['resource_subject'])],
+        'operator' => 'IN'
+      ];
+    }
+
+    if (!empty($tax_query)) {
+      $query_args['tax_query'] = [
+        'relation' => 'AND', // Both filters must match
+        ...$tax_query
+      ];
     }
 
     $query = new WP_Query($query_args);
+
     ob_start();
 
-    if ($query->have_posts()) {
-      echo '<div class="resource-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
-      while ($query->have_posts()) {
-        $query->the_post();
-        echo '<div class="resource-item"><a href="' . get_permalink() . '">' . get_the_title() . '</a></div>';
-      }
-      echo '</div>';
-    } else {
-      echo '<p>No resources found.</p>';
-    }
+    $resources = $query->posts;
+    $template = rfGetTemplate('resource-results.php');
 
-    wp_reset_postdata();
+    if ($template) {
+      include_once $template;
+    } else {
+      echo '<p>Error: Results template not found.</p>';
+    }
 
     // Prepare response JSON
     $response = [
@@ -132,18 +123,21 @@ class ResourceFilterPlugin {
     wp_die();
   }
 
-  private function loadResources($query_args = ['post_type' => 'resource', 'posts_per_page' => -1]) {
-    $query = new WP_Query($query_args);
+  public function loadResources() {
+    $query_args = [
+      'post_type' => 'resource',
+      'posts_per_page' => -1
+    ];
 
-    if ($query->have_posts()) {
-      echo '<div class="resource-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
-      while ($query->have_posts()) {
-        $query->the_post();
-        echo '<div class="resource-item"><a href="' . get_permalink() . '">' . get_the_title() . '</a></div>';
-      }
-      echo '</div>';
+    $query = new WP_Query($query_args);
+    $resources = $query->posts;
+
+    $template = rfGetTemplate('resource-results.php');
+
+    if ($template) {
+      include_once $template;
     } else {
-      echo '<p>No resources found.</p>';
+      echo '<p>Error: Results template not found.</p>';
     }
 
     wp_reset_postdata();

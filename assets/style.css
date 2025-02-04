@@ -1,13 +1,40 @@
 #resource-filter {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  input,
+  select,
+  button {
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    padding: .5rem;
+  }
 }
 
-#resource-filter input,
-#resource-filter select,
-#resource-filter button {
-  border: 1px solid #ccc;
-  font-size: 16px;
-  padding: 8px;
+#resource-filter-summary {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+
+  p { margin: 0; }
+}
+
+#resource-results {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+
+@media (min-width: 768px) { /* Tailwind 'md' breakpoint */
+  #resource-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) { /* Tailwind 'lg' breakpoint */
+  #resource-results {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
