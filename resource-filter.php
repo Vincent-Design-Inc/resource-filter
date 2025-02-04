@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Resource Filter
  * Description: Adds filtering for the 'resource' post type by 'resource_type' and 'resource_subject'.
- * Version: 1.0
+ * Version: 1.0.0
  * Author: Keith Solomon
  */
 
