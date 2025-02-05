@@ -27,15 +27,15 @@ class ResourceFilterPlugin {
     add_action('wp_ajax_nopriv_filter_resources', [$this, 'filterResources']);
   }
 
-/**
- * Enqueues the necessary scripts and styles for the resource filter.
- *
- * Checks if the 'resource_filter' shortcode is present on the page before loading.
- * Includes a CSS style and a JavaScript file specific to the plugin.
- * Localizes the script with AJAX URL and nonce for secure AJAX requests.
- *
- * @since 1.0.0
- */
+  /**
+   * Enqueues the necessary scripts and styles for the resource filter.
+   *
+   * Checks if the 'resource_filter' shortcode is present on the page before loading.
+   * Includes a CSS style and a JavaScript file specific to the plugin.
+   * Localizes the script with AJAX URL and nonce for secure AJAX requests.
+   *
+   * @since 1.0.0
+   */
   public function enqueueScripts() {
     // Load script only if the shortcode is present on the page
     if (!is_admin() && has_shortcode(get_post_field('post_content', get_the_ID()), 'resource_filter')) {
@@ -49,17 +49,17 @@ class ResourceFilterPlugin {
     }
   }
 
-/**
- * Renders the resource filter form.
- *
- * Loads the filter form template and displays a summary of the total resources.
- * Displays the number of resources and applied filters.
- * Calls the loadResources method to display the initial list of resources.
- *
- * @return string The HTML output of the filter form and resource list.
- *
- * @since 1.0.0
- */
+  /**
+   * Renders the resource filter form.
+   *
+   * Loads the filter form template and displays a summary of the total resources.
+   * Displays the number of resources and applied filters.
+   * Calls the loadResources method to display the initial list of resources.
+   *
+   * @return string The HTML output of the filter form and resource list.
+   *
+   * @since 1.0.0
+   */
   public function renderFilterForm() {
     ob_start();
 
@@ -134,12 +134,41 @@ class ResourceFilterPlugin {
   public function filterResources() {
     check_ajax_referer('resource_filter_nonce', 'nonce');
 
+    $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
+
     $query_args = [
       'post_type'      => 'resource',
       'posts_per_page' => -1,
       'tax_query'      => [],
-      's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+      's'             => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
     ];
+
+    // Sorting logic
+    switch ($sort_order) {
+      case 'date_asc':
+        $query_args['orderby'] = 'date';
+        $query_args['order'] = 'ASC';
+        break;
+
+      case 'date_desc':
+        $query_args['orderby'] = 'date';
+        $query_args['order'] = 'DESC';
+        break;
+
+      case 'title_asc':
+        $query_args['orderby'] = 'title';
+        $query_args['order'] = 'ASC';
+        break;
+
+      case 'title_desc':
+        $query_args['orderby'] = 'title';
+        $query_args['order'] = 'DESC';
+        break;
+
+      default:
+        $query_args['orderby'] = 'date';
+        $query_args['order'] = 'DESC';
+    }
 
     $tax_query = [];
 
