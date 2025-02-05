@@ -18,7 +18,7 @@ jQuery(document).ready(function ($) {
     if (selectedTypes.length > 0) appliedFilters.push(`<strong>Type:</strong> ${selectedTypes.join(', ')}`);
     if (selectedSubjects.length > 0) appliedFilters.push(`<strong>Subject:</strong> ${selectedSubjects.join(', ')}`);
 
-    $('#applied-filters').html(appliedFilters.length ? appliedFilters.join(' | ') : 'None');
+    $('#applied-filters').html(appliedFilters.length ? appliedFilters.join('<br>') : 'None');
 
     let formData = {
       action: 'filter_resources',
@@ -36,7 +36,11 @@ jQuery(document).ready(function ($) {
       response = JSON.parse(response);
 
       $('#resource-results').html(response.html);
-      $('#result-count').text(response.count);
+      if (response.count !== undefined) {
+        $('#result-count').text(response.count);
+      } else {
+        $('#result-count').text($('#result-count').text()); // Keep initial count
+      }
     });
   });
 });

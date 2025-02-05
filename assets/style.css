@@ -57,9 +57,11 @@
 #resource-filter-summary {
   display: flex;
   gap: .5rem;
+  justify-content: space-between;
   margin-bottom: 1.25rem;
+  width: 100%;
 
-  p { margin: 0; }
+  p { margin: 0; padding: 0; }
 }
 
 #resource-results {

@@ -63,21 +63,28 @@ class ResourceFilterPlugin {
   public function renderFilterForm() {
     ob_start();
 
-    $template = rfGetTemplate('filter-form.php');
+    $query = new WP_Query([
+      'post_type' => 'resource',
+      'posts_per_page' => -1,
+    ]);
 
-    if ($template) {
-      include_once $template;
+    $resTotal = $query->found_posts; // Get the count of published resources
+
+    $resForm = rfGetTemplate('filter-form.php');
+    $summary = rfGetTemplate('filter-summary.php');
+
+    if ($resForm) {
+      include_once $resForm;
     } else {
-      echo '<p>Error: Template not found.</p>';
+      echo '<p>Error: Form template not found.</p>';
     }
 
-    $total_resources = wp_count_posts('resource')->publish; // Get the count of published resources
+    if ($summary) {
+      include_once $summary;
+    }else {
+      echo '<p>Error: Summary template not found.</p>';
+    }
     ?>
-
-    <div id="resource-filter-summary">
-      <strong>Showing <span id="result-count"><?php echo $total_resources; ?></span> resources</strong>
-      <p><strong>Filters applied:</strong> <span id="applied-filters">None</span></p>
-    </div>
 
     <div id="resource-results">
       <?php $this->loadResources(); ?>
@@ -103,10 +110,10 @@ class ResourceFilterPlugin {
     $query = new WP_Query($query_args);
     $resources = $query->posts;
 
-    $template = rfGetTemplate('resource-results.php');
+    $resResults = rfGetTemplate('resource-results.php');
 
-    if ($template) {
-      include_once $template;
+    if ($resResults) {
+      include_once $resResults;
     } else {
       echo '<p>Error: Results template not found.</p>';
     }
@@ -166,10 +173,11 @@ class ResourceFilterPlugin {
     ob_start();
 
     $resources = $query->posts;
-    $template = rfGetTemplate('resource-results.php');
 
-    if ($template) {
-      include_once $template;
+    $resResults = rfGetTemplate('resource-results.php');
+
+    if ($resResults) {
+      include_once $resResults;
     } else {
       echo '<p>Error: Results template not found.</p>';
     }
