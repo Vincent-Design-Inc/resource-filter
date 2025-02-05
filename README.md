@@ -15,5 +15,8 @@ The Resource Filter Plugin adds filtering capabilities for the 'resource' post t
 To override the default form and results templates, create a `resource-filter` directory in your theme and copy the `filter-form.php` and `resource-results.php` files from the plugin `templates` directory to your theme directory. The plugin will use the template files in your theme directory instead of the default template files.
 
 ## Changelog
+### 1.1.0 - 2025-02-04
+- Fully templated for use in any theme
+- Added result sorting
 ### 1.0.0 - 2025-02-04
 - Initial release
