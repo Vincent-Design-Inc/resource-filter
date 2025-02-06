@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Resource Filter
- * Description: Adds filtering for the 'resource' post type by 'resource_type' and 'resource_subject'.
- * Version: 1.1.0
+ * Plugin Name: Content Filter
+ * Description: Adds filtering for the content typed by various taxonomies.
+ * Version: 1.2.0
  * Author: Keith Solomon
  */
 
@@ -60,17 +60,92 @@ class ResourceFilterPlugin {
    *
    * @since 1.0.0
    */
-  public function renderFilterForm() {
+  public function renderFilterForm($atts) {
+    $atts = shortcode_atts([
+      'type' => 'default' // Accepts 'default' or 'homepage'
+    ], $atts, 'resource_filter');
+
     ob_start();
 
-    $query = new WP_Query([
-      'post_type' => 'resource',
-      'posts_per_page' => -1,
-    ]);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+      $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
-    $resTotal = $query->found_posts; // Get the count of published resources
+      $query_args = [
+        'post_type'      => 'resource',
+        'posts_per_page' => -1,
+        'tax_query'      => [],
+        's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+      ];
 
-    $resForm = rfGetTemplate('filter-form.php');
+      // Sorting logic
+      switch ($sort_order) {
+        case 'date_asc':
+          $query_args['orderby'] = 'date';
+          $query_args['order'] = 'ASC';
+          break;
+
+        case 'date_desc':
+          $query_args['orderby'] = 'date';
+          $query_args['order'] = 'DESC';
+          break;
+
+        case 'title_asc':
+          $query_args['orderby'] = 'title';
+          $query_args['order'] = 'ASC';
+          break;
+
+        case 'title_desc':
+          $query_args['orderby'] = 'title';
+          $query_args['order'] = 'DESC';
+          break;
+
+        default:
+          $query_args['orderby'] = 'date';
+          $query_args['order'] = 'DESC';
+      }
+
+      $tax_query = [];
+
+      if (!empty($_POST['resource_type'])) {
+        $resType = is_array($_POST['resource_type']) ? array_map('sanitize_text_field', $_POST['resource_type']) : sanitize_text_field($_POST['resource_type']);
+
+        $query_args['tax_query'][] = [
+          'taxonomy' => 'resource_type',
+          'field'    => 'slug',
+          'terms'    => $resType,
+          'operator' => 'IN'
+        ];
+      }
+
+      if (!empty($_POST['resource_subject'])) {
+        $query_args['tax_query'][] = [
+          'taxonomy' => 'resource_subject',
+          'field'    => 'slug',
+          'terms'    => array_map('sanitize_text_field', $_POST['resource_subject']),
+          'operator' => 'IN'
+        ];
+      }
+
+      if (!empty($tax_query)) {
+        $query_args['tax_query'] = [
+          'relation' => 'AND', // Both filters must match
+          ...$tax_query
+        ];
+      }
+
+      $query = new WP_Query($query_args);
+    } else {
+      $query = new WP_Query([
+        'post_type' => 'resource',
+        'posts_per_page' => -1,
+      ]);
+    }
+
+    $resTotal = $query->found_posts; // Default total resource count
+
+    // Determine which form template to load
+    $attTmpl = ($atts['type'] === 'homepage') ? 'filter-homepage.php' : 'filter-form.php';
+    $resForm = rfGetTemplate($attTmpl);
     $summary = rfGetTemplate('filter-summary.php');
 
     if ($resForm) {
@@ -79,18 +154,26 @@ class ResourceFilterPlugin {
       echo '<p>Error: Form template not found.</p>';
     }
 
+    if ($atts['type'] === 'default') {
     if ($summary) {
       include_once $summary;
-    }else {
+      } else {
       echo '<p>Error: Summary template not found.</p>';
     }
     ?>
 
     <div id="resource-results">
-      <?php $this->loadResources(); ?>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+          $this->filterResources(); // Directly render filtered results
+        } else {
+          $this->loadResources(); // Load all resources initially
+        }
+        ?>
     </div>
-
     <?php
+    }
+
     return ob_get_clean();
   }
 
@@ -132,7 +215,11 @@ class ResourceFilterPlugin {
    * @since 1.0.0
    */
   public function filterResources() {
-    check_ajax_referer('resource_filter_nonce', 'nonce');
+    $is_ajax = defined('DOING_AJAX') && DOING_AJAX;
+
+    if ($is_ajax) {
+      check_ajax_referer('resource_filter_nonce', 'nonce');
+    }
 
     $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
@@ -173,10 +260,12 @@ class ResourceFilterPlugin {
     $tax_query = [];
 
     if (!empty($_POST['resource_type'])) {
+      $resType = is_array($_POST['resource_type']) ? array_map('sanitize_text_field', $_POST['resource_type']) : sanitize_text_field($_POST['resource_type']);
+
       $query_args['tax_query'][] = [
         'taxonomy' => 'resource_type',
         'field'    => 'slug',
-        'terms'    => array_map('sanitize_text_field', $_POST['resource_type']),
+        'terms'    => $resType,
         'operator' => 'IN'
       ];
     }
@@ -211,19 +300,23 @@ class ResourceFilterPlugin {
       echo '<p>Error: Results template not found.</p>';
     }
 
-    // Prepare response JSON
-    $response = [
-      'count' => $query->found_posts,
-      'filters' => [
-        'search' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
-        'resource_type' => !empty($_POST['resource_type']) ? sanitize_text_field($_POST['resource_type']) : '',
-        'resource_subject' => !empty($_POST['resource_subject']) ? sanitize_text_field($_POST['resource_subject']) : ''
-      ],
-      'html' => ob_get_clean()
-    ];
+    if ($is_ajax) {
+      // Prepare response JSON
+      $response = [
+          'count'   => $query->found_posts,
+        'filters' => [
+            'search'           => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+            'resource_type'    => !empty($_POST['resource_type']) ? sanitize_text_field($_POST['resource_type']) : '',
+          'resource_subject' => !empty($_POST['resource_subject']) ? sanitize_text_field($_POST['resource_subject']) : ''
+        ],
+            'html'             => ob_get_clean()
+      ];
 
-    echo json_encode($response);
-    wp_die();
+      echo json_encode($response);
+      wp_die();
+    } else {
+      echo ob_get_clean();
+    }
   }
 }
 
