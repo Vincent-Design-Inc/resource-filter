@@ -12,7 +12,7 @@ The Content Filter Plugin is a WordPress plugin designed to enhance content disc
 - **Summary Display**: Shows the number of resources and applied filters dynamically.
 
 ## Installation
-1. Download the plugin files and place them in the `wp-content/plugins/resource-filter` directory.
+1. Clone this repo or download the plugin files and place them in the `wp-content/plugins/resource-filter` directory.
 2. Log in to your WordPress admin dashboard.
 3. Navigate to **Plugins** > **Installed Plugins**.
 4. Activate the **Resource Filter** plugin.
