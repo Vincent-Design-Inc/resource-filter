@@ -1,25 +1,42 @@
 # Content Filter Plugin
 
-## Description
-The Content Filter Plugin adds filtering capabilities for any registered post type by any taxonomies attched to it. This plugin provides a shortcode to display a filter form and dynamically updates the resource results based on the selected filters.
+## Brief Description
+The Content Filter Plugin is a WordPress plugin designed to enhance content discoverability by allowing users to filter resources based on custom taxonomies such as resource type and subject. It provides a user-friendly interface for filtering and sorting resources, making it easier for visitors to find the content they need.
+
+## Features
+- **Customizable Filter Form**: Allows filtering by resource type, subject, and search terms.
+- **AJAX-Powered Filtering**: Provides a seamless user experience with instant filtering without page reloads.
+- **Responsive Design**: Ensures the filter form and results look great on all devices.
+- **Template Overrides**: Supports custom templates via theme overrides.
+- **Sorting Options**: Enables sorting by date (ascending/descending) and title (ascending/descending).
+- **Summary Display**: Shows the number of resources and applied filters dynamically.
 
 ## Installation
-1. Clone this repo or download the plugin files and place them in the `wp-content/plugins/resource-filter` directory.
-2. Activate the plugin through the 'Plugins' menu in WordPress.
+1. Download the plugin files and place them in the `wp-content/plugins/resource-filter` directory.
+2. Log in to your WordPress admin dashboard.
+3. Navigate to **Plugins** > **Installed Plugins**.
+4. Activate the **Resource Filter** plugin.
 
 ## Usage
-1. Add the `[resource_filter]` shortcode to any post or page where you want to display the resource filter form.
-2. For the secondary search form, add the `[resource_filter type="homepage"]` shortcode to any post or page where you want to display the secondary search form.
-3. The filter form will allow users to search and filter resources by type, subject and text searching.
+To use the plugin, add the `[resource_filter]` shortcode to any page or post where you want the filter form to appear. The plugin supports two types of forms:
+- **Default Form**: Use `[resource_filter]` for the full filter form with search, resource type, and subject filters.
+- **Homepage/Secondary Form**: Use `[resource_filter type="homepage"]` for a simplified form suitable for the homepage.
 
-## Template Override
-To override the default form and results templates, copy the contents of the plugin `templates` directory to the `resource-filter` directory in your theme. The plugin will use the template files in your theme directory instead of the default plugin versions.
+### Example
+Add one of the following shortcodes to your page or post content where you want the filter form to appear:
 
-### Template Files
-- `filter-form.php` - Main form template
-- `filter-homepage.php` - Secondary form template for the homepage or other uses
-- `filter-summary.php` - Templae for the summary of the number of resources and applied filters
-- `resource-results.php` - Template for the search results
+`[resource_filter]` or `[resource_filter type="homepage"]`
+
+## Configuration
+The plugin is designed to work out of the box with minimal configuration. However, you can customize the following:
+- **Templates**: Override the default templates by placing your custom versions in your theme's `resource-filter` directory.
+  - **Template Files**:
+  - `filter-form.php` - Main form template
+  - `filter-homepage.php` - Secondary form template for the homepage or other uses
+  - `filter-summary.php` - Templae for the summary of the number of resources and applied filters
+  - `resource-results.php` - Template for the search results
+
+- **Taxonomies**: Ensure your WordPress site has the `resource_type` and `resource_subject` taxonomies set up for the `resource` post type.
 
 ## Changelog
 ### 1.2.0 - 2025-02-05
@@ -32,3 +49,20 @@ To override the default form and results templates, copy the contents of the plu
 
 ### 1.0.0 - 2025-02-04
 - Initial release
+
+## License
+This plugin is licensed under the GNU General Public License v2 or later. See the [LICENSE](LICENSE) file for more details.
+
+## Acknowledgements
+- **Author**: Keith Solomon
+- **Contributors**: Open to contributions from the community.
+
+## Contribution Guidelines
+We welcome contributions! If you'd like to contribute to the Resource Filter Plugin, please follow these steps:
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Submit a pull request with a detailed description of your changes.
+
+---
+
+For any issues or feature requests, please open an issue on the [GitHub repository](https://github.com/Vincent-Design-Inc/resource-filter).
