@@ -15,7 +15,7 @@ The Content Filter Plugin is a WordPress plugin designed to enhance content disc
 1. Clone this repo or download the plugin files and place them in the `wp-content/plugins/resource-filter` directory.
 2. Log in to your WordPress admin dashboard.
 3. Navigate to **Plugins** > **Installed Plugins**.
-4. Activate the **Resource Filter** plugin.
+4. Activate the **Content Filter** plugin.
 
 ## Usage
 To use the plugin, add the `[resource_filter]` shortcode to any page or post where you want the filter form to appear. The plugin supports two types of forms:
