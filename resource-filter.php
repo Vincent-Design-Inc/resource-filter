@@ -35,9 +35,22 @@ class ResourceFilterPlugin {
    * @since 1.0.0
    */
   public function enqueueScripts() {
+    // Check if a custom stylesheet exists in the theme directory
+    $theme_stylesheet = get_stylesheet_directory() . '/resource-filter/style.css';
+    $theme_stylesheet_url = get_stylesheet_directory_uri() . '/resource-filter/style.css';
+
+    if (file_exists($theme_stylesheet)) {
+      // Enqueue the stylesheet from the theme
+      error_log('Using theme stylesheet');
+      wp_enqueue_style('content-filter-style', $theme_stylesheet_url, [], filemtime($theme_stylesheet));
+    } else {
+      // Fall back to the plugin's stylesheet
+      error_log('Using plugin stylesheet');
+      wp_enqueue_style('content-filter-style', plugins_url('assets/style.css', __FILE__), [], filemtime(plugin_dir_path(__FILE__) . 'assets/style.css'));
+    }
+
     // Load script only if the shortcode is present on the page
     if (!is_admin() && has_shortcode(get_post_field('post_content', get_the_ID()), 'resource_filter')) {
-      wp_enqueue_style('resource-filter-style', plugins_url('assets/style.css', __FILE__));
       wp_enqueue_script('resource-filter-script', plugins_url('assets/script.js', __FILE__), ['jquery'], null, true);
 
       wp_localize_script('resource-filter-script', 'resourceFilterAjax', [
