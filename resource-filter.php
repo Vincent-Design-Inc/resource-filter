@@ -334,7 +334,6 @@ class ResourceFilterPlugin {
           'prev_text' => '&laquo;',
           'next_text' => '&raquo;',
           'type' => 'array',
-          // 'before_page_number' => (isset($_POST['paged']) && intval($_POST['paged']) === 1) ? '?paged=1' : '',
         ])
       ];
 
