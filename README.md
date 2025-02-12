@@ -63,7 +63,8 @@ This plugin is licensed under the GNU General Public License v2 or later. See th
 - **Contributors**: Open to contributions from the community.
 
 ## Contribution Guidelines
-We welcome contributions! If you'd like to contribute to the Resource Filter Plugin, please follow these steps:
+We welcome contributions! If you'd like to contribute to the Content Filter Plugin, please follow these steps:
+
 1. Fork the repository.
 2. Create a new branch for your feature or bug fix.
 3. Submit a pull request with a detailed description of your changes.
