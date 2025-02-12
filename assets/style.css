@@ -124,6 +124,33 @@
 
 .filter-item button.remove-filter:hover { color: #d63638; }
 
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination a,
+.pagination span {
+  margin: 0 5px;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #0073aa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.pagination a:hover {
+  background: #0073aa;
+  color: #fff;
+}
+
+.pagination .current {
+  background: #0073aa;
+  color: #fff;
+  border-color: #0073aa;
+}
+
 @media (min-width: 768px) { /* Tailwind 'md' breakpoint */
   #resource-results {
     grid-template-columns: repeat(2, minmax(0, 1fr));

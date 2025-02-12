@@ -72,7 +72,8 @@ class ResourceFilterPlugin {
 
       $query_args = [
         'post_type'      => 'resource',
-        'posts_per_page' => -1,
+        'posts_per_page' => 12, // Show 12 results per page
+        'paged' => max(1, get_query_var('paged', 1)), // Get current page number
         'tax_query'      => [],
         's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
       ];
@@ -137,7 +138,8 @@ class ResourceFilterPlugin {
     } else {
       $query = new WP_Query([
         'post_type' => 'resource',
-        'posts_per_page' => -1,
+        'posts_per_page' => 12, // Show 12 results per page
+        'paged' => max(1, get_query_var('paged', 1)), // Get current page number
       ]);
     }
 
@@ -169,6 +171,18 @@ class ResourceFilterPlugin {
         } else {
           $this->loadResources(); // Load all resources initially
         }
+
+        $pagination_links = paginate_links([
+          'total' => $query->max_num_pages,
+          'current' => max(1, get_query_var('paged', 1)),
+          'format' => '?paged=%#%',
+          'prev_text' => '&laquo;',
+          'next_text' => '&raquo;',
+        ]);
+
+        if ($pagination_links) {
+          echo '<div class="pagination">' . $pagination_links . '</div>';
+        }
         ?>
     </div>
     <?php
@@ -187,7 +201,8 @@ class ResourceFilterPlugin {
   public function loadResources() {
     $query_args = [
       'post_type' => 'resource',
-      'posts_per_page' => -1
+      'posts_per_page' => 12, // Show 12 results per page
+      'paged' => max(1, get_query_var('paged', 1)), // Get current page number
     ];
 
     $query = new WP_Query($query_args);
@@ -225,9 +240,10 @@ class ResourceFilterPlugin {
 
     $query_args = [
       'post_type'      => 'resource',
-      'posts_per_page' => -1,
+      'posts_per_page' => 12, // Show 12 results per page
+      'paged'          => isset($_POST['paged']) ? intval($_POST['paged']) : 1, // Get current page number
       'tax_query'      => [],
-      's'             => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+      's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
     ];
 
     // Sorting logic
@@ -303,13 +319,21 @@ class ResourceFilterPlugin {
     if ($is_ajax) {
       // Prepare response JSON
       $response = [
-          'count'   => $query->found_posts,
+        'count' => $query->found_posts,
         'filters' => [
-            'search'           => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
-            'resource_type'    => !empty($_POST['resource_type']) ? sanitize_text_field($_POST['resource_type']) : '',
+          'search' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+          'resource_type' => !empty($_POST['resource_type']) ? sanitize_text_field($_POST['resource_type']) : '',
           'resource_subject' => !empty($_POST['resource_subject']) ? sanitize_text_field($_POST['resource_subject']) : ''
         ],
-            'html'             => ob_get_clean()
+        'html' => ob_get_clean(),
+        'pagination' => paginate_links([
+          'total' => $query->max_num_pages,
+          'current' => isset($_POST['paged']) ? intval($_POST['paged']) : 1,
+          'format' => '%#%',
+          'prev_text' => '&laquo;',
+          'next_text' => '&raquo;',
+          'type' => 'array'
+        ])
       ];
 
       echo json_encode($response);

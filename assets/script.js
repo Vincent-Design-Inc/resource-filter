@@ -1,5 +1,5 @@
 jQuery(document).ready(function ($) {
-  function triggerFiltering() {
+  function triggerFiltering(paged = 1) {
     let searchTerm = $('#search').val();
 
     let selectedTypes = $('input[name="resource_type[]"]:checked')
@@ -16,6 +16,7 @@ jQuery(document).ready(function ($) {
 
     let appliedFilters = [];
 
+    // Search Term
     if (searchTerm) {
       appliedFilters.push(
         `<span class="filter-item" data-type="search" data-value="${searchTerm}">
@@ -25,27 +26,25 @@ jQuery(document).ready(function ($) {
       );
     }
 
-    if (selectedTypes.length > 0) {
+    // Resource Types
+    selectedTypes.forEach(function (type) {
       appliedFilters.push(
-        `<span class="filter-item" data-type="resource_type" data-value="${selectedTypes.join(
-          ', '
-        )}">
-          <strong>Type:</strong> ${selectedTypes.join(', ')}
-          <button class="remove-filter" aria-label="Remove Type">×</button>
+        `<span class="filter-item" data-type="resource_type" data-value="${type}">
+          <strong>Type:</strong> ${type}
+          <button class="remove-filter" aria-label="Remove Type ${type}">×</button>
         </span>`
       );
-    }
+    });
 
-    if (selectedSubjects.length > 0) {
+    // Resource Subjects
+    selectedSubjects.forEach(function (subject) {
       appliedFilters.push(
-        `<span class="filter-item" data-type="resource_subject" data-value="${selectedSubjects.join(
-          ', '
-        )}">
-          <strong>Subject:</strong> ${selectedSubjects.join(', ')}
-          <button class="remove-filter" aria-label="Remove Subject">×</button>
+        `<span class="filter-item" data-type="resource_subject" data-value="${subject}">
+          <strong>Subject:</strong> ${subject}
+          <button class="remove-filter" aria-label="Remove Subject ${subject}">×</button>
         </span>`
       );
-    }
+    });
 
     $('#applied-filters').html(
       appliedFilters.length ? appliedFilters.join(' ') : 'None'
@@ -66,6 +65,7 @@ jQuery(document).ready(function ($) {
         })
         .get(),
       sort_order: $('#sort-order').val(),
+      paged: paged,
     };
 
     $.post(resourceFilterAjax.ajaxurl, formData, function (response) {
@@ -74,6 +74,7 @@ jQuery(document).ready(function ($) {
       $('#resource-results').html(response.html);
       $('#result-count').text(response.count);
 
+      // Update pagination
       if (response.pagination) {
         $('.pagination').html(response.pagination.join(''));
       }
@@ -88,7 +89,7 @@ jQuery(document).ready(function ($) {
     let filterType = $filter.data('type');
     let filterValue = $filter.data('value');
 
-    // Clear the relevant filter
+    // Remove the corresponding filter
     if (filterType === 'search') {
       $('#search').val('');
     } else if (filterType === 'resource_type') {
@@ -106,7 +107,7 @@ jQuery(document).ready(function ($) {
     }
 
     // Re-trigger filtering after removing the filter
-    triggerFiltering();
+    triggerFiltering(1);
   });
 
   // Handle form submission
@@ -146,5 +147,16 @@ document.addEventListener('DOMContentLoaded', function () {
         dropdown.classList.remove('open');
       });
     }
+  });
+
+  // Handle pagination click
+  $(document).on('click', '.pagination a', function (e) {
+    e.preventDefault();
+
+    // Extract the page number from the link
+    let paged = $(this).attr('href').match(/paged=(\d+)/)[1];
+
+    // Trigger filtering for the selected page
+    triggerFiltering(paged);
   });
 });
