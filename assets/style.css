@@ -19,7 +19,7 @@
 }
 
 .search-tax {
-  align-items: flex-start; /* Ensures each <details> aligns to the top */
+  align-items: flex-start;
   display: flex;
   gap: 1rem;
   margin-bottom: 1.25rem;
@@ -61,8 +61,8 @@
     padding: 10px;
     position: absolute;
     top: 100%;
-    z-index: 10;
     width: 100%;
+    z-index: 10;
   }
 
   /* Show Dropdown Menu */

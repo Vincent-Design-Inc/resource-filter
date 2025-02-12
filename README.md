@@ -40,7 +40,7 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 
 ## Roadmap
 - ~~tag close functionality~~
-- general reset button
+- ~~general reset button~~
 - pagination
 
 ## Changelog
