@@ -39,11 +39,18 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 - **Taxonomies**: Ensure your WordPress site has the `resource_type` and `resource_subject` taxonomies set up for the `resource` post type.
 
 ## Roadmap
+- Admin configuration page
 - ~~tag close functionality~~
 - ~~general reset button~~
-- pagination
+- ~~pagination~~
 
 ## Changelog
+### 1.3.0 - 2025-02-12
+- Feature-complete for initial release
+- Add pagination
+- Add general reset button
+- Add tag close functionality
+
 ### 1.2.0 - 2025-02-05
 - Name change to reflect future ability to filter any content, not just `resources`
 - Add secondary search template
