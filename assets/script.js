@@ -1,5 +1,5 @@
 jQuery(document).ready(function ($) {
-  function triggerFiltering(paged = 1) {
+  function triggerFiltering() {
     let searchTerm = $('#search').val();
 
     let selectedTypes = $('input[name="resource_type[]"]:checked')
@@ -66,7 +66,6 @@ jQuery(document).ready(function ($) {
         })
         .get(),
       sort_order: $('#sort-order').val(),
-      paged: paged,
     };
 
     $.post(resourceFilterAjax.ajaxurl, formData, function (response) {
@@ -107,25 +106,45 @@ jQuery(document).ready(function ($) {
     }
 
     // Re-trigger filtering after removing the filter
-    triggerFiltering(1);
+    triggerFiltering();
   });
 
   // Handle form submission
   $('#resource-filter').on('submit', function (e) {
     e.preventDefault();
-    triggerFiltering(1);
+    triggerFiltering();
   });
 
   // Handle sort order change
   $('#sort-order').on('change', function () {
-    triggerFiltering(1);
+    triggerFiltering();
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Toggle dropdown visibility
+  document.querySelectorAll('.custom-dropdown .dropdown-toggle').forEach(function (button) {
+    button.addEventListener('click', function () {
+      const dropdown = this.parentElement;
+
+      // Close all other dropdowns
+      document.querySelectorAll('.custom-dropdown').forEach(function (otherDropdown) {
+        if (otherDropdown !== dropdown) {
+          otherDropdown.classList.remove('open');
+        }
+      });
+
+      // Toggle the current dropdown
+      dropdown.classList.toggle('open');
+    });
   });
 
-  // Handle pagination
-  $(document).on('click', '.pagination a', function (e) {
-    e.preventDefault();
-
-    let paged = $(this).attr('href').match(/paged=(\d+)/)[1];
-    triggerFiltering(paged);
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('.custom-dropdown')) {
+      document.querySelectorAll('.custom-dropdown').forEach(function (dropdown) {
+        dropdown.classList.remove('open');
+      });
+    }
   });
 });

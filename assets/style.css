@@ -25,32 +25,61 @@
   margin-bottom: 1.25rem;
   position: relative;
 
-  details {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    flex: 1; /* Ensures equal width but allows independent height */
-    margin-bottom: 10px;
-    max-height: 4rem;
-    overflow: hidden;
-    padding: 8px;
-    transition: max-height 0.8s ease;
-    width: 100%;
-  }
-
-  details[open] {
-    max-height: 65rem; /* Adjust based on expected content */
-  }
-
-  summary {
-    cursor: pointer;
-    font-weight: bold;
-  }
-
   .filter-options { padding-top: .5rem; }
 
   .filter-options label {
     display: block;
     margin-bottom: 5px;
+  }
+
+  /* Dropdown Container */
+  .custom-dropdown {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+  }
+
+  /* Dropdown Button */
+  .custom-dropdown .dropdown-toggle {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 10px 15px;
+  }
+
+  /* Dropdown Menu (Hidden by Default) */
+  .custom-dropdown .dropdown-menu {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: none;
+    left: 0;
+    max-height: fit-content;
+    overflow-y: auto;
+    padding: 10px;
+    position: absolute;
+    top: 100%;
+    z-index: 10;
+    width: 100%;
+  }
+
+  /* Show Dropdown Menu */
+  .custom-dropdown.open .dropdown-menu {
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: repeat(auto-fill, minmax(15ch, 1fr));
+  }
+
+  /* Checkbox Labels */
+  .dropdown-menu label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .dropdown-menu input[type="checkbox"] {
+    margin-right: 8px;
   }
 }
 

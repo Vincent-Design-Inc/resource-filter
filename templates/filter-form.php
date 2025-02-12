@@ -9,8 +9,9 @@ $resource_subjects = get_terms(['taxonomy' => 'resource_subject', 'hide_empty' =
 <form id="resource-filter">
   <!-- Search Field-->
   <div class="search-text">
-    <input class="full-width" type="text" id="search" name="search" placeholder="Search resources..." value="<?php echo isset($_GET['search']) ? esc_attr($_GET['search']) : ''; ?>">
+    <input class="full-width" type="text" id="search" name="search" placeholder="Search resources..." value="<?php echo isset($search) ? esc_attr($search) : ''; ?>">
 
+    <button type="reset" id="clear-search">&times;</button>
     <button type="submit">Filter</button>
   </div>
 

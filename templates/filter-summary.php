@@ -1,8 +1,6 @@
 <?php
 if (!defined('ABSPATH')) { exit; } // Prevent direct access
 
-error_log('Filter Summary: ' . print_r($_POST, true));
-
 // Get count from AJAX or direct POST
 $count = isset($resTotal) ? esc_html($resTotal) : 0;
 
