@@ -130,6 +130,13 @@
   margin-top: 20px;
 }
 
+.pagination ul {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  padding: 0;
+}
+
 .pagination a,
 .pagination span {
   margin: 0 5px;

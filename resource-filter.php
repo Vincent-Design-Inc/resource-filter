@@ -178,14 +178,14 @@ class ResourceFilterPlugin {
           'format' => '?paged=%#%',
           'prev_text' => '&laquo;',
           'next_text' => '&raquo;',
+          'type' => 'list'
         ]);
-
-        if ($pagination_links) {
-          echo '<div class="pagination">' . $pagination_links . '</div>';
-        }
         ?>
     </div>
     <?php
+      if ($pagination_links) {
+        echo '<div class="pagination">' . $pagination_links . '</div>';
+      }
     }
 
     return ob_get_clean();
@@ -329,10 +329,12 @@ class ResourceFilterPlugin {
         'pagination' => paginate_links([
           'total' => $query->max_num_pages,
           'current' => isset($_POST['paged']) ? intval($_POST['paged']) : 1,
-          'format' => '%#%',
+          'format' => '?paged=%#%',
+          'add_args' => [], // Pass additional query arguments
           'prev_text' => '&laquo;',
           'next_text' => '&raquo;',
-          'type' => 'array'
+          'type' => 'array',
+          // 'before_page_number' => (isset($_POST['paged']) && intval($_POST['paged']) === 1) ? '?paged=1' : '',
         ])
       ];
 

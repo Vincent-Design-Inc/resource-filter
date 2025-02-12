@@ -75,8 +75,14 @@ jQuery(document).ready(function ($) {
       $('#result-count').text(response.count);
 
       // Update pagination
-      if (response.pagination) {
+      if (response.pagination && response.pagination.length > 0) {
+        // Clear and update pagination container
+        if (!$('.pagination').length) {
+          $('#resource-results').after('<div class="pagination"></div>');
+        }
         $('.pagination').html(response.pagination.join(''));
+      } else {
+        $('.pagination').html(''); // Clear pagination if no links are needed
       }
     });
   }
@@ -120,6 +126,19 @@ jQuery(document).ready(function ($) {
   $('#sort-order').on('change', function () {
     triggerFiltering();
   });
+
+
+  // Handle pagination click
+  $(document).on('click', '.pagination a', function (e) {
+    e.preventDefault();
+
+    // Extract the page number from the link
+    let pagedMatch = $(this).attr('href').match(/paged=(\d+)/);
+    let paged = pagedMatch ? pagedMatch[1] : 1; // Default to page 1 if no match is found
+
+    // Trigger filtering for the selected page
+    triggerFiltering(paged);
+  });
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -147,16 +166,5 @@ document.addEventListener('DOMContentLoaded', function () {
         dropdown.classList.remove('open');
       });
     }
-  });
-
-  // Handle pagination click
-  $(document).on('click', '.pagination a', function (e) {
-    e.preventDefault();
-
-    // Extract the page number from the link
-    let paged = $(this).attr('href').match(/paged=(\d+)/)[1];
-
-    // Trigger filtering for the selected page
-    triggerFiltering(paged);
   });
 });
