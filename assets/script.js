@@ -1,4 +1,8 @@
 jQuery(document).ready(function ($) {
+  /** Triggers filtering and pagination of resources based on the current form state.
+   *
+   * @param {number} [paged=1] - The page number to query.
+   */
   function triggerFiltering(paged = 1) {
     let searchTerm = $('#search').val();
 
