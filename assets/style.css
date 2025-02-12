@@ -70,6 +70,30 @@
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
+#applied-filters {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.filter-item {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  display: inline-block;
+  margin: 5px;
+  padding: 5px 10px;
+}
+
+.filter-item button.remove-filter {
+  background: none;
+  border: none;
+  color: #0073aa;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 5px;
+}
+
+.filter-item button.remove-filter:hover { color: #d63638; }
 
 @media (min-width: 768px) { /* Tailwind 'md' breakpoint */
   #resource-results {
