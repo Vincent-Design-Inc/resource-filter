@@ -5,10 +5,12 @@ $resource_types    = get_terms(['taxonomy' => 'resource_type', 'hide_empty' => t
 $resource_subjects = get_terms(['taxonomy' => 'resource_subject', 'hide_empty' => true]);
 ?>
 
+<!-- Theme override -->
 <form id="resource-filter">
-  <!-- Search Field -->
+  <!-- Search Field-->
   <div class="search-text">
-    <input type="text" id="search" name="search" placeholder="Search resources..." class="full-width">
+    <input class="full-width" type="text" id="search" name="search" placeholder="Search resources..." value="<?php echo isset($_GET['search']) ? esc_attr($_GET['search']) : ''; ?>">
+
     <button type="submit">Filter</button>
   </div>
 
@@ -20,7 +22,8 @@ $resource_subjects = get_terms(['taxonomy' => 'resource_subject', 'hide_empty' =
       <div class="filter-options">
         <?php foreach ($resource_types as $type) : ?>
           <label>
-            <input type="checkbox" name="resource_type[]" value="<?php echo esc_attr($type->slug); ?>">
+            <input type="checkbox" name="resource_type[]" value="<?php echo esc_attr($type->slug); ?>"
+            <?php echo (isset($_POST['resource_type']) && $_POST['resource_type'] === $type->slug) ? 'checked' : ''; ?>>
             <?php echo esc_html($type->name); ?>
           </label>
         <?php endforeach; ?>
