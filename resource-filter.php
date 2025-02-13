@@ -10,20 +10,111 @@ if (!defined('ABSPATH')) { exit; } // Prevent direct access
 
 require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
 
-class ResourceFilterPlugin {
-  /** Registers the necessary actions and filters.
+class ContentFilterPlugin {
+  /** Registers the necessary actions and filters for the Content Filter plugin.
    *
-   * Adds a shortcode handler for the 'resource_filter' shortcode.
-   * Enqueues the necessary scripts and styles.
-   * Adds an AJAX handler for filtering resources.
+   * Hooks include:
+   * - admin_menu: Adds the Content Filter settings page to the WordPress admin menu.
+   * - wp_enqueue_scripts: Enqueues the necessary scripts and styles for the resource filter.
+   * - wp_ajax_filter_resources: Handles AJAX requests for filtering resources.
+   * - wp_ajax_nopriv_filter_resources: Handles non-privileged AJAX requests for filtering resources.
    *
    * @since 1.0.0
    */
   public function __construct() {
+    add_action('admin_menu', [$this, 'cfAdminMenu']);
     add_shortcode('resource_filter', [$this, 'renderFilterForm']);
     add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
     add_action('wp_ajax_filter_resources', [$this, 'filterResources']);
     add_action('wp_ajax_nopriv_filter_resources', [$this, 'filterResources']);
+  }
+
+  /** Registers the Content Filter plugin settings page in the WordPress admin menu.
+   *
+   * The settings page is accessible under the 'Settings' menu, and is only visible to users with the 'manage_options' capability.
+   *
+   * @since 1.4.0
+   */
+  public function cfAdminMenu() {
+    add_menu_page(
+      'Content Filter Settings', // Page title
+      'Content Filter', // Menu title
+      'manage_options', // Capability
+      'content-filter-settings', // Menu slug
+      [$this, 'renderAdminPage'], // Callback function
+      'dashicons-filter', // Menu icon
+      25 // Position
+    );
+  }
+
+  /** Renders the Content Filter settings page in the WordPress admin dashboard.
+   *
+   * The page is accessible under the 'Settings' menu, and is only visible to users with the 'manage_options' capability.
+   *
+   * The page includes a form for selecting the post types and taxonomies to include in the filter, as well as a number field for setting the number of posts to display per page in the filter results.
+   *
+   * @since 1.4.0
+   */
+  public function renderAdminPage() {
+    if (!current_user_can('manage_options')) {
+      return;
+    }
+
+    // Handle form submission
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+      check_admin_referer('content_filter_settings');
+
+      $post_types = isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : [];
+      $taxonomies = isset($_POST['taxonomies']) ? array_map('sanitize_text_field', $_POST['taxonomies']) : [];
+      $posts_per_page = isset($_POST['posts_per_page']) ? intval($_POST['posts_per_page']) : 12;
+
+      update_option('content_filter_post_types', $post_types);
+      update_option('content_filter_taxonomies', $taxonomies);
+      update_option('content_filter_posts_per_page', $posts_per_page);
+
+      echo '<div class="updated"><p>Settings saved!</p></div>';
+    }
+
+    // Get saved options
+    $post_types = get_option('content_filter_post_types', []);
+    $taxonomies = get_option('content_filter_taxonomies', []);
+    $posts_per_page = get_option('content_filter_posts_per_page', 12);
+
+    // Get all available post types and taxonomies
+    $all_post_types = get_post_types(['public' => true], 'objects');
+    $all_taxonomies = get_taxonomies(['public' => true], 'objects');
+    ?>
+    <div class="wrap">
+      <h1>Content Filter Settings</h1>
+      <form method="post">
+        <?php wp_nonce_field('content_filter_settings'); ?>
+
+        <h2>Post Types</h2>
+        <p>Select the post types to include in the filter.</p>
+        <?php foreach ($all_post_types as $post_type): ?>
+          <label>
+            <input type="checkbox" name="post_types[]" value="<?php echo esc_attr($post_type->name); ?>" <?php checked(in_array($post_type->name, $post_types)); ?>>
+            <?php echo esc_html($post_type->labels->singular_name); ?>
+          </label><br>
+        <?php endforeach; ?>
+
+        <h2>Taxonomies</h2>
+        <p>Select the taxonomies to include in the filter.</p>
+        <?php foreach ($all_taxonomies as $taxonomy): ?>
+          <label>
+            <input type="checkbox" name="taxonomies[]" value="<?php echo esc_attr($taxonomy->name); ?>" <?php checked(in_array($taxonomy->name, $taxonomies)); ?>>
+            <?php echo esc_html($taxonomy->labels->singular_name); ?>
+          </label><br>
+        <?php endforeach; ?>
+
+        <h2>Posts Per Page</h2>
+        <p>Set the number of posts to display per page in the filter results.</p>
+        <input type="number" name="posts_per_page" value="<?php echo esc_attr($posts_per_page); ?>" min="1" step="1">
+
+        <p><input type="submit" class="button-primary" value="Save Settings"></p>
+      </form>
+    </div>
+    <?php
   }
 
   /** Enqueues the necessary scripts and styles for the resource filter.
@@ -41,11 +132,9 @@ class ResourceFilterPlugin {
 
     if (file_exists($theme_stylesheet)) {
       // Enqueue the stylesheet from the theme
-      error_log('Using theme stylesheet');
       wp_enqueue_style('content-filter-style', $theme_stylesheet_url, [], filemtime($theme_stylesheet));
     } else {
       // Fall back to the plugin's stylesheet
-      error_log('Using plugin stylesheet');
       wp_enqueue_style('content-filter-style', plugins_url('assets/style.css', __FILE__), [], filemtime(plugin_dir_path(__FILE__) . 'assets/style.css'));
     }
 
@@ -139,10 +228,10 @@ class ResourceFilterPlugin {
       $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
       $query_args = [
-        'post_type'      => 'resource',
-        'posts_per_page' => 12, // Show 12 results per page
-        'paged' => max(1, get_query_var('paged', 1)), // Get current page number
-        'tax_query'      => [],
+        'post_type'      => get_option('content_filter_post_types', []),
+        'posts_per_page' => get_option('content_filter_posts_per_page', 12),
+        'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
+        'tax_query'      => $this->buildDynamicTaxQuery(),
         's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
       ];
 
@@ -182,7 +271,7 @@ class ResourceFilterPlugin {
     } else {
       return new WP_Query([
         'post_type' => 'resource',
-        'posts_per_page' => 12, // Show 12 results per page
+        'posts_per_page' => get_option('content_filter_posts_per_page', 12),
         'paged' => max(1, get_query_var('paged', 1)), // Get current page number
       ]);
     }
@@ -244,9 +333,10 @@ class ResourceFilterPlugin {
    */
   public function loadResources() {
     $query_args = [
-      'post_type' => 'resource',
-      'posts_per_page' => 12, // Show 12 results per page
-      'paged' => max(1, get_query_var('paged', 1)), // Get current page number
+      'post_type'      => get_option('content_filter_post_types', ['post']),
+      'posts_per_page' => get_option('content_filter_posts_per_page', 12),
+      'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
+      'tax_query'      => $this->buildDynamicTaxQuery(),
     ];
 
     $query = new WP_Query($query_args);
@@ -312,13 +402,15 @@ class ResourceFilterPlugin {
    * @since 1.0.0
    */
   private function buildQueryArgs() {
+    $post_types = get_option('content_filter_post_types', []);
+
     $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
     $query_args = [
-      'post_type'      => 'resource',
-      'posts_per_page' => 12, // Show 12 results per page
+      'post_type'      => !empty($post_types) ? $post_types : ['post'],
+      'posts_per_page' => get_option('content_filter_posts_per_page', 12),
       'paged'          => isset($_POST['paged']) ? intval($_POST['paged']) : 1, // Get current page number
-      'tax_query'      => [],
+      'tax_query'      => $this->buildDynamicTaxQuery(),
       's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
     ];
 
@@ -326,6 +418,45 @@ class ResourceFilterPlugin {
     $query_args['tax_query'] = $this->buildTaxQuery();
 
     return $query_args;
+  }
+
+  /** Generate a dynamic tax query based on the $_POST data.
+   *
+   * Looks through the taxonomies specified in the settings and builds a tax query
+   * for each one that has a value in the $_POST data. Sanitizes the input data to
+   * prevent SQL injection attacks.
+   *
+   * @return array The tax query array.
+   *
+   * @since 1.4.0
+   */
+  private function buildDynamicTaxQuery() {
+    $taxonomies = get_option('content_filter_taxonomies', []);
+    $tax_query = [];
+
+    if (!empty($taxonomies)) {
+      foreach ($taxonomies as $taxonomy) {
+        if (!empty($_POST[$taxonomy])) {
+          $terms = is_array($_POST[$taxonomy]) ? array_map('sanitize_text_field', $_POST[$taxonomy]) : sanitize_text_field($_POST[$taxonomy]);
+
+          $tax_query[] = [
+            'taxonomy' => $taxonomy,
+            'field'    => 'slug',
+            'terms'    => $terms,
+            'operator' => 'IN',
+          ];
+        }
+      }
+    }
+
+    if (!empty($tax_query)) {
+      return [
+        'relation' => 'AND',
+        ...$tax_query,
+      ];
+    }
+
+    return [];
   }
 
   /** Builds a taxonomy query array for filtering resources by type and subject.
@@ -408,4 +539,4 @@ class ResourceFilterPlugin {
   }
 }
 
-new ResourceFilterPlugin();
+new ContentFilterPlugin();
