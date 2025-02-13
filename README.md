@@ -40,12 +40,15 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 - **Taxonomies**: Ensure your WordPress site has the `resource_type` and `resource_subject` taxonomies set up for the `resource` post type.
 
 ## Roadmap
-- Admin configuration page
+- ~~Admin configuration page~~
 - ~~tag close functionality~~
 - ~~general reset button~~
 - ~~pagination~~
 
 ## Changelog
+### 1.4.0 - 2025-02-13
+- Added admin configuration page
+
 ### 1.3.0 - 2025-02-12
 - Feature-complete for initial release
 - Add pagination
