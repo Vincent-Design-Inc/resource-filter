@@ -46,9 +46,6 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 - ~~pagination~~
 
 ## Changelog
-### 1.5.0 - 2025-02-13
-- Added repo update feature
-
 ### 1.4.0 - 2025-02-13
 - Added admin configuration page
 
