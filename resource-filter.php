@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Content Filter
  * Description: Adds filtering for the content typed by various taxonomies.
- * Version: 1.2.0
+ * Version: 1.4.0
  * Author: Keith Solomon
  */
 
