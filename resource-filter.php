@@ -544,4 +544,5 @@ class ContentFilterPlugin {
 
 new ContentFilterPlugin();
 $gitHubUpdater = new GitHubUpdater(__FILE__);
+$gitHubUpdater->setChangelog('CHANGELOG.md');
 $gitHubUpdater->add();
