@@ -1,14 +1,17 @@
 <?php
 /**
  * Plugin Name: Content Filter
+ * Plugin URI: https://github.com/Vincent-Design-Inc/resource-filter
+ * Update URI: https://github.com/Vincent-Design-Inc/resource-filter
  * Description: Adds filtering for the content typed by various taxonomies.
- * Version: 1.4.0
+ * Version: 1.5.0
  * Author: Keith Solomon
  */
 
 if (!defined('ABSPATH')) { exit; } // Prevent direct access
 
 require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
+require_once plugin_dir_path(__FILE__) . 'includes/GitHubUpdater.php';
 
 class ContentFilterPlugin {
   /** Registers the necessary actions and filters for the Content Filter plugin.
@@ -540,3 +543,5 @@ class ContentFilterPlugin {
 }
 
 new ContentFilterPlugin();
+$gitHubUpdater = new GitHubUpdater(__FILE__);
+$gitHubUpdater->add();
