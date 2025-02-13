@@ -31,11 +31,14 @@ jQuery(document).ready(function ($) {
     }
 
     // Resource Types
-    selectedTypes.forEach(function (type) {
+    $('input[name="resource_type[]"]:checked').each(function () {
+      const slug = $(this).val(); // Get the slug
+      const name = $(this).closest('label').text().trim(); // Get the name
+
       appliedFilters.push(
-        `<span class="filter-item" data-type="resource_type" data-value="${type}">
-          <strong>Type:</strong> ${type}
-          <button class="remove-filter" aria-label="Remove Type ${type}">×</button>
+        `<span class="filter-item" data-type="resource_type" data-value="${slug}">
+          <strong>Type:</strong> ${name}
+          <button class="remove-filter" aria-label="Remove Type ${name}">×</button>
         </span>`
       );
     });
@@ -104,7 +107,7 @@ jQuery(document).ready(function ($) {
       $('#search').val('');
     } else if (filterType === 'resource_type') {
       $('input[name="resource_type[]"]:checked').each(function () {
-        if ($(this).closest('label').text().trim() === filterValue) {
+        if ($(this).val() === filterValue) { // Match the slug, not the name
           $(this).prop('checked', false);
         }
       });
