@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/Vincent-Design-Inc/resource-filter
  * Update URI: https://github.com/Vincent-Design-Inc/resource-filter
  * Description: Adds filtering for the content typed by various taxonomies.
- * Version: 1.5.1
+ * Version: 1.5.2
  * Author: Keith Solomon
  */
 
@@ -188,38 +188,75 @@ class ContentFilterPlugin {
 
     $resTotal = $query->found_posts; // Default total resource count
 
-    // Determine which form template to load
-    if ($atts['type'] === 'homepage') {
-      $homepage_taxonomy = get_option('content_filter_homepage_taxonomy', '');
-
-      if (!empty($homepage_taxonomy) && taxonomy_exists($homepage_taxonomy)) {
-        $GLOBALS['homepage_taxonomy'] = $homepage_taxonomy; // Pass the taxonomy globally for the template
-        $attTmpl = 'filter-homepage.php';
-      } else {
-        echo '<p>Error: No valid taxonomy configured for the homepage filter.</p>';
-        return ob_get_clean();
-      }
-    } else {
-      $attTmpl = 'filter-form.php';
+    $attTmpl = $this->getTemplate($atts['type']);
+    if (!$attTmpl) {
+      return ob_get_clean();
     }
 
     $resForm = rfGetTemplate($attTmpl);
     $summary = rfGetTemplate('filter-summary.php');
 
-    if ($resForm) {
-      include_once $resForm;
-    } else {
-      echo '<p>Error: Form template not found.</p>';
+    $this->includeTemplate($resForm, 'Form template not found.');
+    if ($atts['type'] === 'default') {
+      $this->includeTemplate($summary, 'Summary template not found.');
+      $this->renderResourceResults($query);
     }
 
-    if ($atts['type'] === 'default') {
-      if ($summary) {
-        include_once $summary;
-      } else {
-        echo '<p>Error: Summary template not found.</p>';
-      }
-    ?>
+    return ob_get_clean();
+  }
 
+  /** Retrieves the template file for the given filter type.
+   *
+   * @param string $type The type of filter. Accepts 'default' or 'homepage'.
+   * @return string|false The path to the template file or false if the homepage filter has no configured taxonomy.
+   *
+   * @since 1.0.0
+   */
+  private function getTemplate($type) {
+    if ($type === 'homepage') {
+      $homepage_taxonomy = get_option('content_filter_homepage_taxonomy', '');
+      if (!empty($homepage_taxonomy) && taxonomy_exists($homepage_taxonomy)) {
+        $GLOBALS['homepage_taxonomy'] = $homepage_taxonomy;
+        return 'filter-homepage.php';
+      } else {
+        echo '<p>Error: No valid taxonomy configured for the homepage filter.</p>';
+        return false;
+      }
+    } else {
+      return 'filter-form.php';
+    }
+  }
+
+  /** Includes a template file.
+   *
+   * If the template file is found, it is included once. Otherwise, an error message is displayed.
+   *
+   * @param string $template The path to the template file.
+   * @param string $errorMessage The error message to display if the template file is not found.
+   *
+   * @since 1.0.0
+   */
+  private function includeTemplate($template, $errorMessage) {
+    if ($template) {
+      include_once $template;
+    } else {
+      echo '<p>Error: ' . $errorMessage . '</p>';
+    }
+  }
+
+  /** Renders the resource results.
+   *
+   * If the request method is POST, this directly renders the filtered results.
+   * Otherwise, it loads all resources initially.
+   *
+   * This function also handles pagination for the resource results.
+   *
+   * @param \WP_Query $query The WP_Query object for the resource results.
+   *
+   * @since 1.0.0
+   */
+  private function renderResourceResults($query) {
+    ?>
     <div id="resource-results">
         <?php
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -239,12 +276,9 @@ class ContentFilterPlugin {
         ?>
     </div>
     <?php
-      if ($pagination_links) {
-        echo '<div class="pagination">' . $pagination_links . '</div>';
-      }
+    if ($pagination_links) {
+      echo '<div class="pagination">' . $pagination_links . '</div>';
     }
-
-    return ob_get_clean();
   }
 
   /** Generate a WP_Query object based on the request method.
@@ -573,4 +607,6 @@ class ContentFilterPlugin {
 new ContentFilterPlugin();
 $gitHubUpdater = new GitHubUpdater(__FILE__);
 $gitHubUpdater->setChangelog('CHANGELOG.md');
+$gitHubUpdater->setPluginIcon('assets/cf-icon.webp');
+$gitHubUpdater->setPluginBannerLarge('assets/cf-banner.webp');
 $gitHubUpdater->add();

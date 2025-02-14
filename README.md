@@ -29,7 +29,7 @@ Add one of the following shortcodes to your page or post content where you want 
 
 ## Configuration
 The plugin is designed to work out of the box with minimal configuration. However, you can customize the following:
-- **Templates**: Override the default templates and styles by placing your custom versions in your theme's `resource-filter` directory.
+- **Templates**: Override the default templates and styles by placing your custom versions in your theme's `resource-filter` directory.  You will need to add `"./resource-filter/**/*.{php,vue,js,cjs}",` to the `content` object in your `tailwind-config.js` file to compile the custom styles.
   - **Template Files**:
   - `filter-form.php` - Main form template
   - `filter-homepage.php` - Secondary form template for the homepage or other uses
