@@ -1,11 +1,10 @@
 <?php
 if (!defined('ABSPATH')) { exit; } // Prevent direct access
 
-$resource_types    = get_terms(['taxonomy' => 'resource_type', 'hide_empty' => true]);
-$resource_subjects = get_terms(['taxonomy' => 'resource_subject', 'hide_empty' => true]);
+// Get configured taxonomies from the admin settings
+$configured_taxonomies = get_option('content_filter_taxonomies', []);
 ?>
 
-<!-- Theme override -->
 <form id="resource-filter">
   <!-- Search Field-->
   <div class="search-text">
@@ -16,33 +15,29 @@ $resource_subjects = get_terms(['taxonomy' => 'resource_subject', 'hide_empty' =
   </div>
 
   <div class="search-tax">
-    <!-- Resource Type Filters -->
-    <details>
-      <summary>Resource Type</summary>
+    <?php if (!empty($configured_taxonomies)) : ?>
+      <?php foreach ($configured_taxonomies as $taxonomy) :
+        $taxonomy_obj = get_taxonomy($taxonomy);
 
-      <div class="filter-options">
-        <?php foreach ($resource_types as $type) : ?>
-          <label>
-            <input type="checkbox" name="resource_type[]" value="<?php echo esc_attr($type->slug); ?>"
-            <?php echo (isset($_POST['resource_type']) && $_POST['resource_type'] === $type->slug) ? 'checked' : ''; ?>>
-            <?php echo esc_html($type->name); ?>
-          </label>
-        <?php endforeach; ?>
-      </div>
-    </details>
+        if ($taxonomy_obj) :
+          $terms = get_terms(['taxonomy' => $taxonomy, 'hide_empty' => true]);
 
-    <!-- Resource Subject Filters -->
-    <details>
-      <summary>Resource Subject</summary>
-
-      <div class="filter-options">
-        <?php foreach ($resource_subjects as $subject) : ?>
-          <label>
-            <input type="checkbox" name="resource_subject[]" value="<?php echo esc_attr($subject->slug); ?>">
-            <?php echo esc_html($subject->name); ?>
-          </label>
-        <?php endforeach; ?>
-      </div>
-    </details>
+          if (!empty($terms)) : ?>
+            <details class="taxonomy-filter" data-taxonomy="<?php echo esc_attr($taxonomy); ?>">
+              <summary><?php echo esc_html($taxonomy_obj->labels->singular_name); ?></summary>
+              <div class="filter-options">
+                <?php foreach ($terms as $term) : ?>
+                  <label>
+                    <input type="checkbox" name="<?php echo esc_attr($taxonomy); ?>[]" value="<?php echo esc_attr($term->slug); ?>"
+                    <?php echo (isset($_POST[$taxonomy]) && in_array($term->slug, (array)$_POST[$taxonomy])) ? 'checked' : ''; ?>>
+                    <?php echo esc_html($term->name); ?>
+                  </label>
+                <?php endforeach; ?>
+              </div>
+            </details>
+          <?php endif; ?>
+        <?php endif; ?>
+      <?php endforeach; ?>
+    <?php endif; ?>
   </div>
 </form>
