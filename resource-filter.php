@@ -607,6 +607,7 @@ class ContentFilterPlugin {
 new ContentFilterPlugin();
 $gitHubUpdater = new GitHubUpdater(__FILE__);
 $gitHubUpdater->setChangelog('CHANGELOG.md');
-$gitHubUpdater->setPluginIcon('assets/cf-icon.webp');
-$gitHubUpdater->setPluginBannerLarge('assets/cf-banner.webp');
+$gitHubUpdater->setPluginIcon('assets/icon-256x256.png');
+$gitHubUpdater->setPluginBannerLarge('assets/banner.jpg');
+$gitHubUpdater->setPluginBannerSmall('assets/banner.jpg');
 $gitHubUpdater->add();
