@@ -1,4 +1,7 @@
 ## Changelog
+### 1.5.3 - 2025-02-14
+- Update test
+
 ### 1.5.1 - 2025-02-13
 - Fixed bug in filter removal functionality
 
