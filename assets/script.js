@@ -73,7 +73,7 @@ jQuery(document).ready(function ($) {
   /**
    * Handle form submission for filtering resources.
    */
-  $('#resource-filter').on('submit', function (e) {
+  $('#resource-filter','#homepage-filter').on('submit', function (e) {
     e.preventDefault();
     triggerFiltering(1); // Start at page 1 on new form submission
   });

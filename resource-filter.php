@@ -70,7 +70,9 @@ class ContentFilterPlugin {
       $post_types = isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : [];
       $taxonomies = isset($_POST['taxonomies']) ? array_map('sanitize_text_field', $_POST['taxonomies']) : [];
       $posts_per_page = isset($_POST['posts_per_page']) ? intval($_POST['posts_per_page']) : 12;
+      $homepage_taxonomy = isset($_POST['homepage_taxonomy']) ? sanitize_text_field($_POST['homepage_taxonomy']) : '';
 
+      update_option('content_filter_homepage_taxonomy', $homepage_taxonomy);
       update_option('content_filter_post_types', $post_types);
       update_option('content_filter_taxonomies', $taxonomies);
       update_option('content_filter_posts_per_page', $posts_per_page);
@@ -82,6 +84,7 @@ class ContentFilterPlugin {
     $post_types = get_option('content_filter_post_types', []);
     $taxonomies = get_option('content_filter_taxonomies', []);
     $posts_per_page = get_option('content_filter_posts_per_page', 12);
+    $homepage_taxonomy = get_option('content_filter_homepage_taxonomy', '');
 
     // Get all available post types and taxonomies
     $all_post_types = get_post_types(['public' => true], 'objects');
@@ -113,6 +116,18 @@ class ContentFilterPlugin {
         <h2>Posts Per Page</h2>
         <p>Set the number of posts to display per page in the filter results.</p>
         <input type="number" name="posts_per_page" value="<?php echo esc_attr($posts_per_page); ?>" min="1" step="1">
+
+        <h2>Homepage Taxonomy</h2>
+        <p>Select one taxonomy to include in the homepage search form.</p>
+        <select name="homepage_taxonomy">
+          <option value="">-- Select Taxonomy --</option>
+          <?php
+          foreach ($all_taxonomies as $taxonomy) : ?>
+            <option value="<?php echo esc_attr($taxonomy->name); ?>" <?php selected($taxonomy->name, $homepage_taxonomy); ?>>
+              <?php echo esc_html($taxonomy->labels->singular_name); ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
 
         <p><input type="submit" class="button-primary" value="Save Settings"></p>
       </form>
@@ -174,7 +189,20 @@ class ContentFilterPlugin {
     $resTotal = $query->found_posts; // Default total resource count
 
     // Determine which form template to load
-    $attTmpl = ($atts['type'] === 'homepage') ? 'filter-homepage.php' : 'filter-form.php';
+    if ($atts['type'] === 'homepage') {
+      $homepage_taxonomy = get_option('content_filter_homepage_taxonomy', '');
+
+      if (!empty($homepage_taxonomy) && taxonomy_exists($homepage_taxonomy)) {
+        $GLOBALS['homepage_taxonomy'] = $homepage_taxonomy; // Pass the taxonomy globally for the template
+        $attTmpl = 'filter-homepage.php';
+      } else {
+        echo '<p>Error: No valid taxonomy configured for the homepage filter.</p>';
+        return ob_get_clean();
+      }
+    } else {
+      $attTmpl = 'filter-form.php';
+    }
+
     $resForm = rfGetTemplate($attTmpl);
     $summary = rfGetTemplate('filter-summary.php');
 
