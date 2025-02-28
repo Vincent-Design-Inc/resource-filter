@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/Vincent-Design-Inc/resource-filter
  * Update URI: https://github.com/Vincent-Design-Inc/resource-filter
  * Description: Adds filtering for the content typed by various taxonomies.
- * Version: 1.5.2
+ * Version: 1.5.3
  * Author: Keith Solomon
  */
 

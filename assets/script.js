@@ -10,38 +10,19 @@ jQuery(document).ready(function ($) {
     let searchTerm = $('#search').val();
 
     let appliedFilters = [];
-    let formData = {
-      action: 'filter_resources',
-      nonce: resourceFilterAjax.nonce,
-      search: searchTerm,
-      paged: paged,
-      sort_order: $('#sort-order').val(),
-      taxonomies: {}, // Store selected taxonomy terms
-    };
+    let selectedTypes = $('input[name="resource_type[]"]:checked')
+      .map(function () {
+        return $(this).closest('label').text().trim();
+      })
+      .get();
 
-    // Dynamically handle all taxonomy inputs
-    $('.taxonomy-filter').each(function () {
-      let taxonomy = $(this).data('taxonomy');
-      let selectedTerms = $(this).find('input:checked').map(function () {
-        return this.value;
-      }).get();
+    let selectedSubjects = $('input[name="resource_subject[]"]:checked')
+      .map(function () {
+        return $(this).closest('label').text().trim();
+      })
+      .get();
 
-      if (selectedTerms.length > 0) {
-        formData.taxonomies[taxonomy] = selectedTerms;
-
-        // Add to applied filters
-        selectedTerms.forEach(function (term) {
-          appliedFilters.push(
-            `<span class="filter-item" data-type="taxonomy" data-taxonomy="${taxonomy}" data-value="${term}">
-              <strong>${taxonomy}:</strong> ${term}
-              <button class="remove-filter" aria-label="Remove ${taxonomy} ${term}">×</button>
-            </span>`
-          );
-        });
-      }
-    });
-
-    // Include search term in applied filters
+    // Search Term
     if (searchTerm) {
       appliedFilters.push(
         `<span class="filter-item" data-type="search" data-value="${searchTerm}">
@@ -51,12 +32,59 @@ jQuery(document).ready(function ($) {
       );
     }
 
-    // Update "Filters Used" section
-    $('#applied-filters').html(appliedFilters.length ? appliedFilters.join(' ') : 'None');
+    // Resource Types
+    $('input[name="resource_type[]"]:checked').each(function () {
+      const slug = $(this).val(); // Get the slug
+      const name = $(this).closest('label').text().trim(); // Get the name
+
+      appliedFilters.push(
+        `<span class="filter-item" data-type="resource_type" data-value="${slug}">
+          <strong>Type:</strong> ${name}
+          <button class="remove-filter" aria-label="Remove Type ${name}">×</button>
+        </span>`
+      );
+    });
+
+    // Resource Subjects
+    selectedSubjects.forEach(function (subject) {
+      appliedFilters.push(
+        `<span class="filter-item" data-type="resource_subject" data-value="${subject}">
+          <strong>Subject:</strong> ${subject}
+          <button class="remove-filter" aria-label="Remove Subject ${subject}">×</button>
+        </span>`
+      );
+    });
+
+    $('#applied-filters').html(
+      appliedFilters.length ? appliedFilters.join(' ') : 'None'
+    );
+
+    let formData = {
+      action: 'filter_resources',
+      nonce: resourceFilterAjax.nonce,
+      search: searchTerm,
+      paged: paged,
+      sort_order: $('#sort-order').val(),
+      resource_type: $('input[name="resource_type[]"]:checked')
+        .map(function () {
+          return this.value;
+        })
+        .get(),
+      resource_subject: $('input[name="resource_subject[]"]:checked')
+        .map(function () {
+          return this.value;
+        })
+        .get(),
+    };
+
+    console.log(formData);
+
 
     // Perform AJAX request
     $.post(resourceFilterAjax.ajaxurl, formData, function (response) {
       response = JSON.parse(response);
+
+      console.log(response);
 
       $('#resource-results').html(response.html);
       $('#result-count').text(response.count || 0);
@@ -73,9 +101,25 @@ jQuery(document).ready(function ($) {
   /**
    * Handle form submission for filtering resources.
    */
-  $('#resource-filter','#homepage-filter').on('submit', function (e) {
+  $('#homepage-filter').on('submit', function (e) {
     e.preventDefault();
     triggerFiltering(1); // Start at page 1 on new form submission
+  });
+
+  // Handle sort order change
+  $('#sort-order').on('change', function () {
+    triggerFiltering();
+  });
+
+  // Trigger filtering when dropdowns or checkboxes change
+  $('#resource-filter select, #resource-filter input[type="checkbox"]').on('change', function () {
+    triggerFiltering(1);
+  });
+
+  // Allow the search field to be submitted manually
+  $('#resource-filter').on('submit', function (e) {
+    e.preventDefault();
+    triggerFiltering(1);
   });
 
   /**
@@ -110,5 +154,33 @@ jQuery(document).ready(function ($) {
     }
 
     triggerFiltering(1); // Refresh results starting at page 1
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Toggle dropdown visibility
+  document.querySelectorAll('.custom-dropdown .dropdown-toggle').forEach(function (button) {
+    button.addEventListener('click', function () {
+      const dropdown = this.parentElement;
+
+      // Close all other dropdowns
+      document.querySelectorAll('.custom-dropdown').forEach(function (otherDropdown) {
+        if (otherDropdown !== dropdown) {
+          otherDropdown.classList.remove('open');
+        }
+      });
+
+      // Toggle the current dropdown
+      dropdown.classList.toggle('open');
+    });
+  });
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('.custom-dropdown')) {
+      document.querySelectorAll('.custom-dropdown').forEach(function (dropdown) {
+        dropdown.classList.remove('open');
+      });
+    }
   });
 });

@@ -134,7 +134,6 @@ jQuery(document).ready(function ($) {
     triggerFiltering();
   });
 
-
   // Handle pagination click
   $(document).on('click', '.pagination a', function (e) {
     e.preventDefault();

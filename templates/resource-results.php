@@ -6,30 +6,32 @@ if (!empty($resources)) :
     $postID    = $resource->ID;
     $postTitle = get_the_title($postID);
     $postLink  = get_permalink($postID);
+    $terms     = get_the_terms($postID, 'resource_type');
   ?>
-    <div class="resource-item border border-primary-500 p-4 rounded">
-      <h3 class="text-22px font-semibold leading-2 my-0 py-0"><a class="text-indigo-400" href="<?php echo esc_url($postLink); ?>"><?php echo esc_html($postTitle); ?></a></h3>
+    <div class="px-4 sm:px-0">
+      <?php if (has_post_thumbnail($postID)) : ?>
+        <div class="block bg-[#F3F3F3] h-[32rem]">
+          <a href="<?php echo esc_url($postLink); ?>">
+            <img src="<?php echo esc_url(get_the_post_thumbnail_url($postID)); ?>" alt="<?php echo esc_attr($postTitle); ?>"
+              class="flex justify-center items-center w-full h-full object-contain">
+          </a>
+        </div>
+      <?php endif; ?>
 
-      <div class="flex flex-col mt-8">
-        <p class="text-14px leading-tight my-0 py-0"><strong>Resource Type:</strong> <?php echo esc_html(get_the_terms($postID, 'resource_type')[0]->name); ?></p>
-        <p class="text-14px leading-tight my-0 py-0">
-          <strong>Resource Subject(s):</strong>
-          <?php
-          $subjects = get_the_terms($postID, 'resource_subject');
-          $count = count($subjects);
-          $i = 1;
+      <p class="text-sm font-thin uppercase">
+        <?php echo $terms ? esc_html(strtolower($terms[0]->name)) : ''; ?>
+      </p>
 
-          foreach ($subjects as $subject) {
-            if ($i === $count) {
-              echo esc_html($subject->name);
-            } else {
-              echo esc_html($subject->name) . ', ';
-            }
+      <div class="flex">
+        <div>
+          <h3 class="text-lg"><a class="" href="<?php echo esc_url($postLink); ?>"><?php echo esc_html($postTitle); ?></a></h3>
+        </div>
 
-            $i++;
-          }
-          ?>
-        </p>
+        <div class="flex items-center ml-auto pr-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 ml-2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </div>
       </div>
     </div>
   <?php endforeach; ?>
