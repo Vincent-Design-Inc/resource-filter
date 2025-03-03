@@ -57,6 +57,11 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 
 ## Changelog
 
+## 1.5.4 - 2025-03-03
+
+- Re-add filter removal functionality
+- Fix bug in search field
+
 ### 1.5.3 - 2025-02-28
 
 - Live filtering for type and subject

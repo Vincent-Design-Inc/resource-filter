@@ -9,7 +9,10 @@ jQuery(document).ready(function ($) {
   function triggerFiltering(paged = 1) {
     let searchTerm = $('#search').val();
 
-    let appliedFilters = [];
+    let appliedFilters  = [];
+    let typeFilters    = [];
+    let subjectFilters = [];
+
     let selectedTypes = $('input[name="resource_type[]"]:checked')
       .map(function () {
         return $(this).closest('label').text().trim();
@@ -40,8 +43,12 @@ jQuery(document).ready(function ($) {
       appliedFilters.push(
         `<span class="filter-item" data-type="resource_type" data-value="${slug}">
           <strong>Type:</strong> ${name}
-          <button class="remove-filter" aria-label="Remove Type ${name}">×</button>
+          <button class="remove-filter" aria-label="Remove ${name}">×</button>
         </span>`
+      );
+
+      typeFilters.push(
+        `${name}`
       );
     });
 
@@ -50,13 +57,24 @@ jQuery(document).ready(function ($) {
       appliedFilters.push(
         `<span class="filter-item" data-type="resource_subject" data-value="${subject}">
           <strong>Subject:</strong> ${subject}
-          <button class="remove-filter" aria-label="Remove Subject ${subject}">×</button>
+          <button class="remove-filter" aria-label="Remove ${subject}">×</button>
         </span>`
+      );
+
+      subjectFilters.push(
+        `${subject}`
       );
     });
 
     $('#applied-filters').html(
       appliedFilters.length ? appliedFilters.join(' ') : 'None'
+    );
+
+    $('#type_text').html(
+      typeFilters.length ? typeFilters.join(', ') : 'Resource Type'
+    );
+    $('#subject_text').html(
+      subjectFilters.length ? subjectFilters.join(', ') : 'Subject Tags'
     );
 
     let formData = {
@@ -77,14 +95,9 @@ jQuery(document).ready(function ($) {
         .get(),
     };
 
-    console.log(formData);
-
-
     // Perform AJAX request
     $.post(resourceFilterAjax.ajaxurl, formData, function (response) {
       response = JSON.parse(response);
-
-      console.log(response);
 
       $('#resource-results').html(response.html);
       $('#result-count').text(response.count || 0);
@@ -137,23 +150,32 @@ jQuery(document).ready(function ($) {
   /**
    * Handle removing individual filters from the "Filters Used" section.
    */
-  $(document).on('click', '.remove-filter', function () {
+  $(document).on('click', '.remove-filter', function (e) {
+    e.preventDefault();
+
     let $filter = $(this).closest('.filter-item');
     let filterType = $filter.data('type');
     let filterValue = $filter.data('value');
 
-    if (filterType === 'taxonomy') {
-      let taxonomy = $filter.data('taxonomy');
-      $(`.taxonomy-filter[data-taxonomy="${taxonomy}"] input:checked`).each(function () {
-        if ($(this).val() === filterValue) {
+    // Remove the corresponding filter
+    if (filterType === 'search') {
+      $('#search').val('');
+    } else if (filterType === 'resource_type') {
+      $('input[name="resource_type[]"]:checked').each(function () {
+        if ($(this).val() === filterValue) { // Match the slug, not the name
           $(this).prop('checked', false);
         }
       });
-    } else if (filterType === 'search') {
-      $('#search').val('');
+    } else if (filterType === 'resource_subject') {
+      $('input[name="resource_subject[]"]:checked').each(function () {
+        if ($(this).closest('label').text().trim() === filterValue) {
+          $(this).prop('checked', false);
+        }
+      });
     }
 
-    triggerFiltering(1); // Refresh results starting at page 1
+    // Re-trigger filtering after removing the filter
+    triggerFiltering(1);
   });
 });
 
