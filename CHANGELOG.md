@@ -2,6 +2,7 @@
 
 ## 1.5.4 - 2025-03-03
 
+- Fix count issue
 - Re-add filter removal functionality
 - Fix bug in search field
 

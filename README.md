@@ -59,6 +59,7 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 
 ## 1.5.4 - 2025-03-03
 
+- Fix count issue
 - Re-add filter removal functionality
 - Fix bug in search field
 
