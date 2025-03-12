@@ -182,11 +182,11 @@ class ContentFilterPlugin {
       'type' => 'default' // Accepts 'default' or 'homepage'
     ], $atts, 'resource_filter');
 
-    ob_start();
-
     $query = $this->getQuery();
 
-    $resTotal = $query->found_posts; // Default total resource count
+    define('RF_TOTAL_RESOURCES', $query->found_posts);
+
+    ob_start();
 
     $attTmpl = $this->getTemplate($atts['type']);
     if (!$attTmpl) {
@@ -197,6 +197,7 @@ class ContentFilterPlugin {
     $summary = rfGetTemplate('filter-summary.php');
 
     $this->includeTemplate($resForm, 'Form template not found.');
+
     if ($atts['type'] === 'default') {
       $this->includeTemplate($summary, 'Summary template not found.');
       $this->renderResourceResults($query);
@@ -266,12 +267,12 @@ class ContentFilterPlugin {
         }
 
         $pagination_links = paginate_links([
-          'total' => $query->max_num_pages,
-          'current' => max(1, get_query_var('paged', 1)),
-          'format' => '?paged=%#%',
+          'total'     => $query->max_num_pages,
+          'current'   => max(1, get_query_var('paged', 1)),
+          'format'    => '?paged=%#%',
           'prev_text' => '&laquo;',
           'next_text' => '&raquo;',
-          'type' => 'list'
+          'type'      => 'list'
         ]);
         ?>
     </div>
@@ -293,7 +294,7 @@ class ContentFilterPlugin {
       $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
       $query_args = [
-        'post_type'      => get_option('content_filter_post_types', []),
+        'post_type'      => get_option('content_filter_post_types', ['post']),
         'posts_per_page' => get_option('content_filter_posts_per_page', 12),
         'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
         'tax_query'      => $this->buildDynamicTaxQuery(),
@@ -335,9 +336,9 @@ class ContentFilterPlugin {
       return new WP_Query($query_args);
     } else {
       return new WP_Query([
-        'post_type' => 'resource',
+        'post_type'      => get_option('content_filter_post_types', ['post']),
         'posts_per_page' => get_option('content_filter_posts_per_page', 12),
-        'paged' => max(1, get_query_var('paged', 1)), // Get current page number
+        'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
       ]);
     }
   }
@@ -405,6 +406,7 @@ class ContentFilterPlugin {
     ];
 
     $query = new WP_Query($query_args);
+    $resources['count'] = $query->found_posts;
     $resources = $query->posts;
 
     $resResults = rfGetTemplate('resource-results.php');

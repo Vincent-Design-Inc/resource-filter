@@ -111,14 +111,6 @@ jQuery(document).ready(function ($) {
     });
   }
 
-  /**
-   * Handle form submission for filtering resources.
-   */
-  $('#homepage-filter').on('submit', function (e) {
-    e.preventDefault();
-    triggerFiltering(1); // Start at page 1 on new form submission
-  });
-
   // Handle sort order change
   $('#sort-order').on('change', function () {
     triggerFiltering();
@@ -135,9 +127,7 @@ jQuery(document).ready(function ($) {
     triggerFiltering(1);
   });
 
-  /**
-   * Handle pagination link clicks.
-   */
+  // Handle pagination link clicks.
   $(document).on('click', '.pagination a', function (e) {
     e.preventDefault();
 
@@ -147,9 +137,7 @@ jQuery(document).ready(function ($) {
     triggerFiltering(paged);
   });
 
-  /**
-   * Handle removing individual filters from the "Filters Used" section.
-   */
+  // Handle removing individual filters from the "Filters Used" section.
   $(document).on('click', '.remove-filter', function (e) {
     e.preventDefault();
 
