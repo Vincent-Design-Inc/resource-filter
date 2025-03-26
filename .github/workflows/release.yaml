@@ -66,12 +66,12 @@ jobs:
 
           echo "zip_name=$ZIP_NAME" >> "$GITHUB_ENV"
 
-      - name: Create new Git tag
+      - name: Create new git tag
         run: |
           git tag ${{ steps.release-tag.outputs.tag }}
           git push origin ${{ steps.release-tag.outputs.tag }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         id: create_release
