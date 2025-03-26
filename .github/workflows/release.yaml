@@ -66,14 +66,20 @@ jobs:
 
           echo "zip_name=$ZIP_NAME" >> "$GITHUB_ENV"
 
+      - name: Create new Git tag
+        run: |
+          git tag ${{ steps.release-tag.outputs.tag }}
+          git push origin ${{ steps.release-tag.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ github.token }}
           tag_name: ${{ steps.release-tag.outputs.tag }}
           name: Release ${{ steps.release-tag.outputs.tag }}
           body: ${{ steps.extract-changelog.outputs.changelog }}
           files: ${{ env.zip_name }}
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
