@@ -71,9 +71,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          token: ${{ github.token }}
           tag_name: ${{ steps.release-tag.outputs.tag }}
           name: Release ${{ steps.release-tag.outputs.tag }}
           body: ${{ steps.extract-changelog.outputs.changelog }}
           files: ${{ env.zip_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
