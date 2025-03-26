@@ -1,0 +1,78 @@
+name: Add release
+run-name: Add tagged release with Github Actions
+on: [push]
+
+jobs:
+  CreateRelease:
+    name: Create release
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.head_commit.message, '#release') && !contains(github.event.head_commit.message, '#skipGA') }}
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Get current date
+        id: get-date
+        run: |
+          echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release tag
+        id: release-tag
+        run: |
+          DATE="${{ steps.get-date.outputs.date }}"
+          TAG_PREFIX="$DATE"
+
+          # Find existing tags for the date
+          EXISTING=$(git tag | grep "^$TAG_PREFIX-" || true)
+
+          if [ -z "$EXISTING" ]; then
+            SERIAL=1
+          else
+            SERIAL=$(echo "$EXISTING" | sed "s/^$TAG_PREFIX-//" | sort -nr | head -n1)
+            SERIAL=$((SERIAL + 1))
+          fi
+
+          NEW_TAG="$TAG_PREFIX-$SERIAL"
+          echo "tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Show new tag
+        run: |
+          echo "Tag to be created: ${{ steps.release-tag.outputs.tag }}"
+
+      - name: Extract latest changelog entry and version
+        id: extract-changelog
+        run: |
+          version=$(awk '/^## /{ print $2; exit }' CHANGELOG.md)
+          changelog=$(awk '/^## /{i++} i==1{print}' CHANGELOG.md)
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "changelog<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$changelog" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Create renamed zip file
+        run: |
+          REPO_NAME=$(basename -s .git `git config --get remote.origin.url`)
+          VERSION=${{ steps.extract-changelog.outputs.version }}
+          ZIP_NAME="${REPO_NAME}-${VERSION}.zip"
+
+          # Create a temporary clone without .git
+          mkdir package
+          git archive --format=zip HEAD -o "$ZIP_NAME"
+
+          echo "zip_name=$ZIP_NAME" >> "$GITHUB_ENV"
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.release-tag.outputs.tag }}
+          name: Release ${{ steps.release-tag.outputs.tag }}
+          body: ${{ steps.extract-changelog.outputs.changelog }}
+          files: ${{ env.zip_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
