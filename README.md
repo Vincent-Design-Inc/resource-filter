@@ -1,7 +1,5 @@
 # Content Filter Plugin
 
-## Brief Description
-
 The Content Filter Plugin is a WordPress plugin designed to enhance content discoverability by allowing users to filter resources based on custom taxonomies such as resource type and subject. It provides a user-friendly interface for filtering and sorting resources, making it easier for visitors to find the content they need.
 
 ## Features
@@ -15,7 +13,7 @@ The Content Filter Plugin is a WordPress plugin designed to enhance content disc
 
 ## Installation
 
-1. Clone this repo or download the plugin files and place them in the `wp-content/plugins/resource-filter` directory.
+1. Clone this repo or download the [latest release](https://github.com/Vincent-Design-Inc/resource-filter/releases) and place them in the `wp-content/plugins/resource-filter` directory.
 2. Log in to your WordPress admin dashboard.
 3. Navigate to **Plugins** > **Installed Plugins**.
 4. Activate the **Content Filter** plugin.
