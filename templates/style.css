@@ -7,7 +7,7 @@
     border: 1px solid #ccc;
     border-right: none;
     font-size: 1rem;
-    padding: .5rem;
+    padding: 1rem;
     width: 100%;
   }
 
@@ -95,7 +95,7 @@
 
 #resource-results {
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
@@ -127,7 +127,7 @@
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  padding: 20px 0;
 }
 
 .pagination ul {
