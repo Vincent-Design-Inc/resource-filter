@@ -16,37 +16,36 @@ if (!empty($_POST['search'])) {
   ];
 }
 
-// Handle the "Resource Type" filter
-if (!empty($_POST['resource_type'])) {
-  $selected_types = is_array($_POST['resource_type']) ? $_POST['resource_type'] : [$_POST['resource_type']];
-  $filters[] = [
-    'type' => 'resource_type',
-    'value' => esc_html(implode(',', $selected_types)),
-    'label' => '<strong>Type:</strong> ' . esc_html(implode(', ', $selected_types))
-  ];
-}
+// Get selected taxonomies from admin settings
+$selectedTaxonomies = get_option('content_filter_taxonomies', []);
 
-// Handle the "Resource Subject" filter
-if (!empty($_POST['resource_subject'])) {
-  $selected_subjects = is_array($_POST['resource_subject']) ? $_POST['resource_subject'] : [$_POST['resource_subject']];
-  $filters[] = [
-    'type' => 'resource_subject',
-    'value' => esc_html(implode(',', $selected_subjects)),
-    'label' => '<strong>Subject:</strong> ' . esc_html(implode(', ', $selected_subjects))
-  ];
+// Handle dynamic taxonomy filters
+foreach ($selectedTaxonomies as $taxonomy) {
+  if (!empty($_POST[$taxonomy])) {
+    $selectedTerms = is_array($_POST[$taxonomy]) ? $_POST[$taxonomy] : [$_POST[$taxonomy]];
+    $taxonomyObj = get_taxonomy($taxonomy);
+
+    if ($taxonomyObj) {
+      $filters[] = [
+        'type' => $taxonomy,
+        'value' => esc_html(implode(',', $selectedTerms)),
+        'label' => '<strong>' . esc_html($taxonomyObj->labels->singular_name) . ':</strong> ' . esc_html(implode(', ', $selectedTerms))
+      ];
+    }
+  }
 }
 
 // Display filters as HTML
-$filter_html = '';
+$filterHtml = '';
 if (!empty($filters)) {
   foreach ($filters as $filter) {
-    $filter_html .= '<span class="filter-item" data-type="' . esc_attr($filter['type']) . '" data-value="' . esc_attr($filter['value']) . '">'
+    $filterHtml .= '<span class="filter-item" data-type="' . esc_attr($filter['type']) . '" data-value="' . esc_attr($filter['value']) . '">'
       . $filter['label']
       . ' <button class="remove-filter" aria-label="Remove ' . esc_attr($filter['type']) . '">×</button>'
       . '</span> ';
   }
 } else {
-  $filter_html = 'None';
+  $filterHtml = 'None';
 }
 ?>
 
@@ -57,19 +56,19 @@ if (!empty($filters)) {
   <div class="sort-filters flex items-start gap-4">
     <!-- Sort Container -->
     <div id="sort-container">
-      <label for="sort-order">Sort by:</label>
-      <select id="sort-order">
-        <option value="date_desc" <?php selected(isset($_GET['sort_order']) ? $_GET['sort_order'] : '', 'date_desc'); ?>>Newest First</option>
-        <option value="date_asc" <?php selected(isset($_GET['sort_order']) ? $_GET['sort_order'] : '', 'date_asc'); ?>>Oldest First</option>
-        <option value="title_asc" <?php selected(isset($_GET['sort_order']) ? $_GET['sort_order'] : '', 'title_asc'); ?>>Title (A-Z)</option>
-        <option value="title_desc" <?php selected(isset($_GET['sort_order']) ? $_GET['sort_order'] : '', 'title_desc'); ?>>Title (Z-A)</option>
+      <label for="sortOrder">Sort by:</label>
+      <select id="sortOrder">
+        <option value="date_desc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'date_desc'); ?>>Newest First</option>
+        <option value="date_asc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'date_asc'); ?>>Oldest First</option>
+        <option value="title_asc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'title_asc'); ?>>Title (A-Z)</option>
+        <option value="title_desc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'title_desc'); ?>>Title (Z-A)</option>
       </select>
     </div>
 
     <!-- Applied Filters -->
     <p>
       <strong>Filters applied:</strong><br>
-      <span id="applied-filters"><?php echo $filter_html; ?></span>
+      <span id="applied-filters"><?php echo $filterHtml; ?></span>
     </p>
   </div>
 </div>

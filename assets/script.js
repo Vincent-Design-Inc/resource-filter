@@ -8,91 +8,80 @@ jQuery(document).ready(function ($) {
    */
   function triggerFiltering(paged = 1) {
     let searchTerm = $('#search').val();
+    let appliedFilters = [];
 
-    let appliedFilters  = [];
-    let typeFilters    = [];
-    let subjectFilters = [];
-
-    let selectedTypes = $('input[name="resource_type[]"]:checked')
-      .map(function () {
-        return $(this).closest('label').text().trim();
-      })
-      .get();
-
-    let selectedSubjects = $('input[name="resource_subject[]"]:checked')
-      .map(function () {
-        return $(this).closest('label').text().trim();
-      })
-      .get();
-
-    // Search Term
     if (searchTerm) {
       appliedFilters.push(
         `<span class="filter-item" data-type="search" data-value="${searchTerm}">
-          <strong>Search:</strong> "${searchTerm}"
-          <button class="remove-filter" aria-label="Remove Search">×</button>
+          <strong>Search:</strong> ${searchTerm}
+          <button class="remove-filter" aria-label="Remove search term">×</button>
         </span>`
       );
     }
 
-    // Resource Types
-    $('input[name="resource_type[]"]:checked').each(function () {
-      const slug = $(this).val(); // Get the slug
-      const name = $(this).closest('label').text().trim(); // Get the name
+    // Collect selected taxonomy filters dynamically
+    let taxonomyFilters = {};
+    $('input[type="checkbox"]:checked').each(function () {
+      let taxonomy = $(this).attr('name').replace('[]', ''); // Extract taxonomy name
 
-      appliedFilters.push(
-        `<span class="filter-item" data-type="resource_type" data-value="${slug}">
-          <strong>Type:</strong> ${name}
-          <button class="remove-filter" aria-label="Remove ${name}">×</button>
-        </span>`
-      );
+      if (!taxonomyFilters[taxonomy]) {
+        taxonomyFilters[taxonomy] = [];
+      }
 
-      typeFilters.push(
-        `${name}`
-      );
+      taxonomyFilters[taxonomy].push({
+      value: $(this).val(),
+      text: $(this).closest('label').text().trim() // Get the text associated with the checkbox
+      });
     });
 
-    // Resource Subjects
-    selectedSubjects.forEach(function (subject) {
-      appliedFilters.push(
-        `<span class="filter-item" data-type="resource_subject" data-value="${subject}">
-          <strong>Subject:</strong> ${subject}
-          <button class="remove-filter" aria-label="Remove ${subject}">×</button>
-        </span>`
-      );
+    const toTitleCase = (phrase) => {
+      return phrase
+        .toLowerCase()
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
 
-      subjectFilters.push(
-        `${subject}`
-      );
-    });
+    // Build applied filters for display
+    let dropdownFilters = [];
+    let finalFilters = {};
 
-    $('#applied-filters').html(
-      appliedFilters.length ? appliedFilters.join(' ') : 'None'
-    );
+    for (let taxonomy in taxonomyFilters) {
+      taxonomyFilters[taxonomy].forEach(function (term) {
+        let taxName = toTitleCase(taxonomy);
 
-    $('#type_text').html(
-      typeFilters.length ? typeFilters.join(', ') : 'Resource Type'
-    );
-    $('#subject_text').html(
-      subjectFilters.length ? subjectFilters.join(', ') : 'Subject Tags'
-    );
+        appliedFilters.push(
+          `<span class="filter-item" data-type="${taxonomy}" data-value="${term.value}">
+            <strong>${taxName}:</strong> ${term.text}
+            <button class="remove-filter" aria-label="Remove ${term.text}">×</button>
+          </span>`
+        );
+
+        dropdownFilters.push(term.text);
+
+        if (!finalFilters[taxonomy]) {
+          finalFilters[taxonomy] = [];
+        }
+
+        finalFilters[taxonomy].push(
+          term.value,
+        );
+
+        $(`#${taxonomy}_text`).html(
+          dropdownFilters ? dropdownFilters.join(', ') : taxName
+        );
+      });
+    }
+
+    $('#applied-filters').html(appliedFilters.length ? appliedFilters.join(' ') : 'None');
 
     let formData = {
       action: 'filter_resources',
       nonce: resourceFilterAjax.nonce,
       search: searchTerm,
       paged: paged,
-      sort_order: $('#sort-order').val(),
-      resource_type: $('input[name="resource_type[]"]:checked')
-        .map(function () {
-          return this.value;
-        })
-        .get(),
-      resource_subject: $('input[name="resource_subject[]"]:checked')
-        .map(function () {
-          return this.value;
-        })
-        .get(),
+      sort_order: $('#sortOrder').val(),
+      ...finalFilters, // Include taxonomy filters dynamically
     };
 
     // Perform AJAX request
@@ -112,7 +101,7 @@ jQuery(document).ready(function ($) {
   }
 
   // Handle sort order change
-  $('#sort-order').on('change', function () {
+  $('#sortOrder').on('change', function () {
     triggerFiltering();
   });
 
@@ -148,15 +137,10 @@ jQuery(document).ready(function ($) {
     // Remove the corresponding filter
     if (filterType === 'search') {
       $('#search').val('');
-    } else if (filterType === 'resource_type') {
-      $('input[name="resource_type[]"]:checked').each(function () {
+    } else {
+      // Dynamically handle taxonomy filters
+      $(`input[name="${filterType}[]"]:checked`).each(function () {
         if ($(this).val() === filterValue) { // Match the slug, not the name
-          $(this).prop('checked', false);
-        }
-      });
-    } else if (filterType === 'resource_subject') {
-      $('input[name="resource_subject[]"]:checked').each(function () {
-        if ($(this).closest('label').text().trim() === filterValue) {
           $(this).prop('checked', false);
         }
       });

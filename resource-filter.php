@@ -67,13 +67,13 @@ class ContentFilterPlugin {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       check_admin_referer('content_filter_settings');
 
-      $post_types = isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : [];
+      $postTypes = isset($_POST['post_types']) ? array_map('sanitize_text_field', $_POST['post_types']) : [];
       $taxonomies = isset($_POST['taxonomies']) ? array_map('sanitize_text_field', $_POST['taxonomies']) : [];
       $posts_per_page = isset($_POST['posts_per_page']) ? intval($_POST['posts_per_page']) : 12;
       $homepage_taxonomy = isset($_POST['homepage_taxonomy']) ? sanitize_text_field($_POST['homepage_taxonomy']) : '';
 
       update_option('content_filter_homepage_taxonomy', $homepage_taxonomy);
-      update_option('content_filter_post_types', $post_types);
+      update_option('content_filter_post_types', $postTypes);
       update_option('content_filter_taxonomies', $taxonomies);
       update_option('content_filter_posts_per_page', $posts_per_page);
 
@@ -81,7 +81,7 @@ class ContentFilterPlugin {
     }
 
     // Get saved options
-    $post_types = get_option('content_filter_post_types', []);
+    $postTypes = get_option('content_filter_post_types', []);
     $taxonomies = get_option('content_filter_taxonomies', []);
     $posts_per_page = get_option('content_filter_posts_per_page', 12);
     $homepage_taxonomy = get_option('content_filter_homepage_taxonomy', '');
@@ -99,7 +99,7 @@ class ContentFilterPlugin {
         <p>Select the post types to include in the filter.</p>
         <?php foreach ($all_post_types as $post_type): ?>
           <label>
-            <input type="checkbox" name="post_types[]" value="<?php echo esc_attr($post_type->name); ?>" <?php checked(in_array($post_type->name, $post_types)); ?>>
+            <input type="checkbox" name="post_types[]" value="<?php echo esc_attr($post_type->name); ?>" <?php checked(in_array($post_type->name, $postTypes)); ?>>
             <?php echo esc_html($post_type->labels->singular_name); ?>
           </label><br>
         <?php endforeach; ?>
@@ -129,7 +129,7 @@ class ContentFilterPlugin {
           <?php endforeach; ?>
         </select>
 
-        <p><input type="submit" class="button-primary" value="Save Settings"></p>
+        <p style="margin-top: 1.5rem;"><input type="submit" class="button-primary" value="Save Settings"></p>
       </form>
     </div>
     <?php
@@ -153,7 +153,7 @@ class ContentFilterPlugin {
       wp_enqueue_style('content-filter-style', $theme_stylesheet_url, [], filemtime($theme_stylesheet));
     } else {
       // Fall back to the plugin's stylesheet
-      wp_enqueue_style('content-filter-style', plugins_url('assets/style.css', __FILE__), [], filemtime(plugin_dir_path(__FILE__) . 'assets/style.css'));
+      wp_enqueue_style('content-filter-style', plugins_url('templates/style.css', __FILE__), [], filemtime(plugin_dir_path(__FILE__) . 'templates/style.css'));
     }
 
     // Load script only if the shortcode is present on the page
@@ -184,7 +184,8 @@ class ContentFilterPlugin {
 
     $query = $this->getQuery();
 
-    define('RF_TOTAL_RESOURCES', $query->found_posts);
+    global $postsTotal;
+    $postsTotal = $query->found_posts;
 
     ob_start();
 
@@ -216,6 +217,7 @@ class ContentFilterPlugin {
   private function getTemplate($type) {
     if ($type === 'homepage') {
       $homepage_taxonomy = get_option('content_filter_homepage_taxonomy', '');
+
       if (!empty($homepage_taxonomy) && taxonomy_exists($homepage_taxonomy)) {
         $GLOBALS['homepage_taxonomy'] = $homepage_taxonomy;
         return 'filter-homepage.php';
@@ -290,56 +292,40 @@ class ContentFilterPlugin {
    * @return WP_Query The query object
    */
   private function getQuery() {
+    $postTypes = get_option('content_filter_post_types', ['post']); // Get selected post types from admin
+    $postCount = get_option('content_filter_posts_per_page', 12); // Get posts per page from admin
+    $strSearch = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
       $query_args = [
-        'post_type'      => get_option('content_filter_post_types', ['post']),
-        'posts_per_page' => get_option('content_filter_posts_per_page', 12),
+        'post_type'      => $postTypes,
+        'posts_per_page' => $postCount,
         'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
         'tax_query'      => $this->buildDynamicTaxQuery(),
-        's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+        's'              => $strSearch,
       ];
 
       // Sorting logic
       $query_args = $this->applySorting($query_args, $sort_order);
 
-      $tax_query = [];
+      $query = new WP_Query($query_args);
+      $query->set('count', $query->found_posts);
 
-      if (!empty($_POST['resource_type'])) {
-        $resType = is_array($_POST['resource_type']) ? array_map('sanitize_text_field', $_POST['resource_type']) : sanitize_text_field($_POST['resource_type']);
-
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'resource_type',
-          'field'    => 'slug',
-          'terms'    => $resType,
-          'operator' => 'IN'
-        ];
-      }
-
-      if (!empty($_POST['resource_subject'])) {
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'resource_subject',
-          'field'    => 'slug',
-          'terms'    => array_map('sanitize_text_field', $_POST['resource_subject']),
-          'operator' => 'IN'
-        ];
-      }
-
-      if (!empty($tax_query)) {
-        $query_args['tax_query'] = [
-          'relation' => 'AND', // Both filters must match
-          ...$tax_query
-        ];
-      }
-
-      return new WP_Query($query_args);
+      return $query;
     } else {
-      return new WP_Query([
-        'post_type'      => get_option('content_filter_post_types', ['post']),
-        'posts_per_page' => get_option('content_filter_posts_per_page', 12),
+      $query = new WP_Query([
+        'post_type'      => $postTypes,
+        'posts_per_page' => $postCount,
         'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
+        'tax_query'      => $this->buildDynamicTaxQuery(),
+        's'              => $strSearch,
       ]);
+
+      $query->set('count', $query->found_posts);
+
+      return $query;
     }
   }
 
@@ -365,27 +351,27 @@ class ContentFilterPlugin {
     switch ($sort_order) {
       case 'date_asc':
         $query_args['orderby'] = 'date';
-        $query_args['order'] = 'ASC';
+        $query_args['order']   = 'ASC';
         break;
 
       case 'date_desc':
         $query_args['orderby'] = 'date';
-        $query_args['order'] = 'DESC';
+        $query_args['order']   = 'DESC';
         break;
 
       case 'title_asc':
         $query_args['orderby'] = 'title';
-        $query_args['order'] = 'ASC';
+        $query_args['order']   = 'ASC';
         break;
 
       case 'title_desc':
         $query_args['orderby'] = 'title';
-        $query_args['order'] = 'DESC';
+        $query_args['order']   = 'DESC';
         break;
 
       default:
         $query_args['orderby'] = 'date';
-        $query_args['order'] = 'DESC';
+        $query_args['order']   = 'DESC';
     }
 
     return $query_args;
@@ -469,20 +455,21 @@ class ContentFilterPlugin {
    * @since 1.0.0
    */
   private function buildQueryArgs() {
-    $post_types = get_option('content_filter_post_types', []);
-
+    $postTypes = get_option('content_filter_post_types', []);
+    $postCount = get_option('content_filter_posts_per_page', 12); // Get posts per page from admin
+    $strSearch = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
     $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
     $query_args = [
-      'post_type'      => !empty($post_types) ? $post_types : ['post'],
-      'posts_per_page' => get_option('content_filter_posts_per_page', 12),
+      'post_type'      => !empty($postTypes) ? $postTypes : ['post'],
+      'posts_per_page' => $postCount,
       'paged'          => isset($_POST['paged']) ? intval($_POST['paged']) : 1, // Get current page number
       'tax_query'      => $this->buildDynamicTaxQuery(),
-      's'              => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
+      's'              => $strSearch,
     ];
 
     $query_args = $this->applySorting($query_args, $sort_order);
-    $query_args['tax_query'] = $this->buildTaxQuery();
+    $query_args['tax_query'] = $this->buildDynamicTaxQuery();
 
     return $query_args;
   }
@@ -498,7 +485,7 @@ class ContentFilterPlugin {
    * @since 1.4.0
    */
   private function buildDynamicTaxQuery() {
-    $taxonomies = get_option('content_filter_taxonomies', []);
+    $taxonomies = get_option('content_filter_taxonomies', []); // Get selected taxonomies from admin
     $tax_query = [];
 
     if (!empty($taxonomies)) {
@@ -526,50 +513,6 @@ class ContentFilterPlugin {
     return [];
   }
 
-  /** Builds a taxonomy query array for filtering resources by type and subject.
-   *
-   * Constructs a taxonomy query based on the 'resource_type' and 'resource_subject'
-   * POST parameters. The function checks if these parameters are present and
-   * properly sanitizes them before adding them to the query. If both parameters
-   * are provided, the query will require both conditions to match using an 'AND'
-   * relation.
-   *
-   * @return array The constructed tax query array, or an empty array if no filters are applied.
-   */
-
-  private function buildTaxQuery() {
-    $tax_query = [];
-
-    if (!empty($_POST['resource_type'])) {
-      $resType = is_array($_POST['resource_type']) ? array_map('sanitize_text_field', $_POST['resource_type']) : sanitize_text_field($_POST['resource_type']);
-
-      $tax_query[] = [
-        'taxonomy' => 'resource_type',
-        'field'    => 'slug',
-        'terms'    => $resType,
-        'operator' => 'IN'
-      ];
-    }
-
-    if (!empty($_POST['resource_subject'])) {
-      $tax_query[] = [
-        'taxonomy' => 'resource_subject',
-        'field'    => 'slug',
-        'terms'    => array_map('sanitize_text_field', $_POST['resource_subject']),
-        'operator' => 'IN'
-      ];
-    }
-
-    if (!empty($tax_query)) {
-      return [
-        'relation' => 'AND', // Both filters must match
-        ...$tax_query
-      ];
-    }
-
-    return $tax_query;
-  }
-
   /** Sends an AJAX response with resource filtering results.
    *
    * Constructs a response array containing the number of resources found,
@@ -583,23 +526,30 @@ class ContentFilterPlugin {
 
   private function sendAjaxResponse($query) {
     $response = [
-      'count' => $query->found_posts,
-      'filters' => [
-        'search' => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
-        'resource_type' => !empty($_POST['resource_type']) ? sanitize_text_field($_POST['resource_type']) : '',
-        'resource_subject' => !empty($_POST['resource_subject']) ? sanitize_text_field($_POST['resource_subject']) : ''
+      'count'       => $query->found_posts,
+      'filters'     => [
+        'search'    => isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '',
       ],
-      'html' => ob_get_clean(),
-      'pagination' => paginate_links([
-        'total' => $query->max_num_pages,
-        'current' => isset($_POST['paged']) ? intval($_POST['paged']) : 1,
-        'format' => '?paged=%#%',
-        'add_args' => [], // Pass additional query arguments
+      'html'        => ob_get_clean(),
+      'pagination'  => paginate_links([
+        'total'     => $query->max_num_pages,
+        'current'   => isset($_POST['paged']) ? intval($_POST['paged']) : 1,
+        'format'    => '?paged=%#%',
+        'add_args'  => [], // Pass additional query arguments
         'prev_text' => '&laquo;',
         'next_text' => '&raquo;',
-        'type' => 'array',
+        'type'      => 'array',
       ])
     ];
+
+    // Include dynamic taxonomy filters in the response
+    $taxonomies = get_option('content_filter_taxonomies', []);
+
+    foreach ($taxonomies as $taxonomy) {
+      if (!empty($_POST[$taxonomy])) {
+        $response['filters'][$taxonomy] = array_map('sanitize_text_field', (array) $_POST[$taxonomy]);
+      }
+    }
 
     echo json_encode($response);
     wp_die();
