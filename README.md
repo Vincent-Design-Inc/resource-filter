@@ -46,7 +46,7 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 
 ## Changelog
 
-## 1.6.1 - 2025-03-29
+## 1.6.1 - 2025-04-07
 
 - Fixed bug in filter removal functionality
 - Updated templates for a better starting point for customization
