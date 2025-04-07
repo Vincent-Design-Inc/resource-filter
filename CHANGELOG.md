@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.1 - 2025-03-29
+
+- Fixed bug in filter removal functionality
+- Updated templates for a better starting point for customization
+
+## 1.6.0 - 2025-03-29
+
+- Implement full admin configuarability
+- Update action to build releases automatically
+- Clean up unneeded files
+- Update templates to use new admin settings
+
 ## 1.5.4 - 2025-03-03
 
 - Fix count issue

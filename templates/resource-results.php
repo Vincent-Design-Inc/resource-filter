@@ -2,8 +2,8 @@
 if (!defined('ABSPATH')) { exit; } // Prevent direct access
 
 // Define dynamic post type and taxonomy
-// $postType = isset($postType) ? $postType : 'post'; // Default to 'post' if not set
-// $taxonomy = isset($taxonomy) ? $taxonomy : 'category'; // Default to 'category' if not set
+$postType = isset($postType) ? $postType : 'post'; // Default to 'post' if not set
+$taxonomy = isset($taxonomy) ? $taxonomy : 'category'; // Default to 'category' if not set
 
 if (!empty($resources)) :
   foreach ($resources as $resource) :

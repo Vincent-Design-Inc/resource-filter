@@ -6,7 +6,7 @@ jQuery(document).ready(function ($) {
    *
    * @param {number} paged The current page number (default is 1).
    */
-  function triggerFiltering(paged = 1) {
+  window.triggerFiltering = function (paged = 1) { // Attach to the window object
     let searchTerm = $('#search').val();
     let appliedFilters = [];
 
@@ -98,7 +98,8 @@ jQuery(document).ready(function ($) {
         $('.pagination').html('');
       }
     });
-  }
+  };
+
 
   // Handle sort order change
   $('#sortOrder').on('change', function () {
@@ -157,15 +158,17 @@ document.addEventListener('DOMContentLoaded', function () {
     button.addEventListener('click', function () {
       const dropdown = this.parentElement;
 
-      // Close all other dropdowns
+      // Close all other dropdowns and update aria-expanded
       document.querySelectorAll('.custom-dropdown').forEach(function (otherDropdown) {
         if (otherDropdown !== dropdown) {
           otherDropdown.classList.remove('open');
+          otherDropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
         }
       });
 
-      // Toggle the current dropdown
-      dropdown.classList.toggle('open');
+      // Toggle the current dropdown and update aria-expanded
+      const isOpen = dropdown.classList.toggle('open');
+      this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
   });
 

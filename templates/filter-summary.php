@@ -2,7 +2,8 @@
 if (!defined('ABSPATH')) { exit; } // Prevent direct access
 
 // Get count from AJAX or direct POST
-$count = isset($resTotal) ? esc_html($resTotal) : 0;
+global $postsTotal;
+$count = isset($postsTotal) ? esc_html($postsTotal) : 0;
 
 // Initialize filters array
 $filters = [];
@@ -54,21 +55,21 @@ if (!empty($filters)) {
   <p><strong>Showing <span id="result-count"><?php echo esc_html($count); ?></span> resource(s)</strong></p>
 
   <div class="sort-filters flex items-start gap-4">
-    <!-- Sort Container -->
-    <div id="sort-container">
-      <label for="sortOrder">Sort by:</label>
-      <select id="sortOrder">
-        <option value="date_desc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'date_desc'); ?>>Newest First</option>
-        <option value="date_asc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'date_asc'); ?>>Oldest First</option>
-        <option value="title_asc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'title_asc'); ?>>Title (A-Z)</option>
-        <option value="title_desc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'title_desc'); ?>>Title (Z-A)</option>
-      </select>
-    </div>
-
     <!-- Applied Filters -->
     <p>
       <strong>Filters applied:</strong><br>
       <span id="applied-filters"><?php echo $filterHtml; ?></span>
     </p>
+  </div>
+
+  <!-- Sort Container -->
+  <div id="sort-container">
+    <label for="sortOrder"><strong>Sort by:</strong></label>
+    <select id="sortOrder" name="sortOrder">
+      <option value="date_desc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'date_desc'); ?>>Newest First</option>
+      <option value="date_asc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'date_asc'); ?>>Oldest First</option>
+      <option value="title_asc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'title_asc'); ?>>Title (A-Z)</option>
+      <option value="title_desc" <?php selected(isset($_GET['sortOrder']) ? $_GET['sortOrder'] : '', 'title_desc'); ?>>Title (Z-A)</option>
+    </select>
   </div>
 </div>

@@ -35,7 +35,8 @@ Add one of the following shortcodes to your page or post content where you want 
 
 The plugin is designed to work out of the box with minimal configuration. However, you can customize the following:
 
-- **Templates**: Override the default templates and styles by placing your custom versions in your theme's `resource-filter` directory.  You will need to add `"./resource-filter/**/*.{php,vue,js,cjs}",` to the `content` object in your `tailwind-config.js` file to compile the custom styles.
+- **Templates**: Override the default templates and styles by placing your custom versions in your theme's `resource-filter` directory.  You will need to add `"./resource-filter/**/*.{php,css}",` to the `content` object in your `tailwind-config.js` or `@source "./resource-filter/**/*.{php,css}` in your main css file is using Tailwind 4 to compile the custom styles.
+
   - **Template Files**:
   - `filter-form.php` - Main form template
   - `filter-homepage.php` - Secondary form template for the homepage or other uses
@@ -43,17 +44,19 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
   - `resource-results.php` - Template for the search results
   - `style.css` - Custom styles for the filter system
 
-- **Taxonomies**: Ensure your WordPress site has the `resource_type` and `resource_subject` taxonomies set up for the `resource` post type.
-
-## Roadmap
-
-- ~~Repo updates~~
-- ~~Admin configuration page~~
-- ~~tag close functionality~~
-- ~~general reset button~~
-- ~~pagination~~
-
 ## Changelog
+
+## 1.6.1 - 2025-03-29
+
+- Fixed bug in filter removal functionality
+- Updated templates for a better starting point for customization
+
+## 1.6.0 - 2025-03-29
+
+- Implement full admin configuarability
+- Update action to build releases automatically
+- Clean up unneeded files
+- Update templates to use new admin settings
 
 ## 1.5.4 - 2025-03-03
 
