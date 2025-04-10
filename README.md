@@ -49,6 +49,7 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 ## 1.6.3 - 2025-04-10
 
 - Update dropdowns to close when focus is removed
+- Remove label change on dropdowns when filters are chosen
 
 ## 1.6.2 - 2025-04-10
 

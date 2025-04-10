@@ -67,9 +67,9 @@ jQuery(document).ready(function ($) {
           term.value,
         );
 
-        $(`#${taxonomy}_text`).html(
-          dropdownFilters ? dropdownFilters.join(', ') : taxName
-        );
+        // $(`#${taxonomy}_text`).html(
+        //   dropdownFilters ? dropdownFilters.join(', ') : taxName
+        // );
       });
     }
 
