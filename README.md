@@ -46,6 +46,10 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 
 ## Changelog
 
+## 1.6.2 - 2025-04-10
+
+- Fixed accessibility issues in the form reset buttons and dropdown modals
+
 ## 1.6.1 - 2025-04-07
 
 - Fixed bug in filter removal functionality

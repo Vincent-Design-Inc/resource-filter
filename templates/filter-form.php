@@ -10,7 +10,7 @@ $selected_taxonomies = get_option('content_filter_taxonomies', []); // Get selec
     <div class="search-input-wrapper flex-grow">
       <input class="full-width bg-[#F8F8F8] border-[#8B8B8B] border rounded-xl" type="text" id="search" name="search"
         placeholder="Search resources..." value="<?php echo isset($search) ? esc_attr($search) : ''; ?>">
-      <button type="reset" id="clear-search">&times;</button>
+      <button type="reset" id="clear-search" title="Clear the filters" alt="Clear the filters">&times;</button>
     </div>
     <div class="flex justify-center md:justify-start">
       <button class="btn btn-primary bg-primary text-white rounded-xl w-full md:w-auto px-4 py-2" type="submit">Search</button>

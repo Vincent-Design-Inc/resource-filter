@@ -177,6 +177,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!event.target.closest('.custom-dropdown')) {
       document.querySelectorAll('.custom-dropdown').forEach(function (dropdown) {
         dropdown.classList.remove('open');
+        dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+
+  // Close dropdowns when pressing the Escape key
+  document.addEventListener('keyup', function (event) {
+    if (event.key === 'Escape') {
+      document.querySelectorAll('.custom-dropdown').forEach(function (dropdown) {
+        dropdown.classList.remove('open');
+        dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
       });
     }
   });
