@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.2 - 2025-04-10
+
+- Fixed accessibility issues in the form reset buttons and dropdown modals
+
 ## 1.6.1 - 2025-03-29
 
 - Fixed bug in filter removal functionality
