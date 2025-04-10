@@ -170,6 +170,18 @@ document.addEventListener('DOMContentLoaded', function () {
       const isOpen = dropdown.classList.toggle('open');
       this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
+
+    // Close dropdown when tabbing away
+    button.parentElement.addEventListener('focusout', function (event) {
+      const dropdown = this;
+      const relatedTarget = event.relatedTarget;
+
+      // Check if the newly focused element is outside the dropdown
+      if (!dropdown.contains(relatedTarget)) {
+        dropdown.classList.remove('open');
+        dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+      }
+    });
   });
 
   // Close dropdowns when clicking outside

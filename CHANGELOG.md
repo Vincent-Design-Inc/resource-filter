@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.3 - 2025-04-10
+
+- Update dropdowns to close when focus is removed
+
 ## 1.6.2 - 2025-04-10
 
 - Fixed accessibility issues in the form reset buttons and dropdown modals
