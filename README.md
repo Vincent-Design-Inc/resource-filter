@@ -46,6 +46,11 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 
 ## Changelog
 
+## 1.6.4 - 2025-06-19
+
+- Add scrolling to top and focus move functionality when moving to a new page
+  - See `templates/filter-summary.php` for changes needed for templates
+
 ## 1.6.3 - 2025-04-10
 
 - Update dropdowns to close when focus is removed

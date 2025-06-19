@@ -50,7 +50,8 @@ if (!empty($filters)) {
 }
 ?>
 
-<div id="resource-filter-summary" class="flex justify-between w-full">
+<!-- Add tabindex for scroll and focus -->
+<div id="resource-filter-summary" tabindex="-1" class="flex justify-between w-full">
   <!-- Resource Count -->
   <p><strong>Showing <span id="result-count"><?php echo esc_html($count); ?></span> resource(s)</strong></p>
 
@@ -60,6 +61,9 @@ if (!empty($filters)) {
       <strong>Filters applied:</strong><br>
       <span id="applied-filters"><?php echo $filterHtml; ?></span>
     </p>
+
+    <!-- Add target element for focus on pagination scroll -->
+    <h2 tabindex="-1" class="sr-only">Search Results</h2>
   </div>
 
   <!-- Sort Container -->

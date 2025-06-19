@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.4 - 2025-06-19
+
+- Add scrolling to top and focus move functionality when moving to a new page
+
 ## 1.6.3 - 2025-04-10
 
 - Update dropdowns to close when focus is removed
