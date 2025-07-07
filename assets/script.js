@@ -14,10 +14,10 @@ jQuery( document ).ready(
 
 			if (searchTerm) {
 				appliedFilters.push(
-					` < span class = "filter-item" data - type = "search" data - value = "${searchTerm}" >
-					< strong > Search: < / strong > ${searchTerm}
-					< button class = "remove-filter" aria - label = "Remove search term" > × < / button >
-					< / span > `
+					` <span class = "filter-item" data-type = "search" data-value = "${searchTerm}">
+					<strong>Search: </strong> ${searchTerm}
+					<button class = "remove-filter" aria-label = "Remove search term">×</button>
+					</span>`
 				);
 			}
 
@@ -58,10 +58,10 @@ jQuery( document ).ready(
 						let taxName = toTitleCase( taxonomy );
 
 						appliedFilters.push(
-							` < span class = "filter-item" data - type = "${taxonomy}" data - value = "${term.value}" >
-							< strong > ${taxName}: < / strong > ${term.text}
-							< button class = "remove-filter" aria - label = "Remove ${term.text}" > × < / button >
-							< / span > `
+							`<span class = "filter-item" data-type = "${taxonomy}" data-value = "${term.value}">
+							<strong>${taxName}: </strong>${term.text}
+							<button class = "remove-filter" aria-label = "Remove ${term.text}">×</button>
+							</span>`
 						);
 
 						dropdownFilters.push( term.text );
@@ -152,21 +152,21 @@ jQuery( document ).ready(
 				// Scroll to the results target and move focus (twice) after going to new page.
 				const formTarget = document.getElementById( 'resource-filter-summary' );
 
-        if ( formTarget ) {
+				if ( formTarget ) {
 					formTarget.scrollIntoView( { behavior: 'smooth', block: 'start' } );
-          formTarget.focus();
+					formTarget.focus();
 
-          setTimeout(
-            function () {
-                const firstH2 = formTarget.querySelector('h2');
+					setTimeout(
+						function () {
+								const firstH2 = formTarget.querySelector('h2');
 
-                if (firstH2) {
-                  firstH2.focus();
-                } else {
-                  formTarget.focus();
-                }
-            }
-          , 100 );
+								if (firstH2) {
+									firstH2.focus();
+								} else {
+									formTarget.focus();
+								}
+						}
+					, 100 );
 				}
 			}
 		);

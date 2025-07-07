@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.5 - 2025-07-07
+
+- Fix error in script that caused code display breakage
+
 ## 1.6.4 - 2025-06-19
 
 - Add scrolling to top and focus move functionality when moving to a new page
