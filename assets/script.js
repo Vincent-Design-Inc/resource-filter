@@ -230,20 +230,69 @@ document.addEventListener(
 					}
 				);
 
+				/**
+				 * This will close the dropdown prematurely if the user clicks 
+				 * inside the dropdown.
+				 * 
+				 * Note that `dropdown-menu` is absolute positioned,
+				 * so it will be removed from the document flow.
+				 */
 				// Close dropdown when tabbing away
-				button.parentElement.addEventListener(
-					'focusout',
-					function (event) {
-						const dropdown      = this;
-						const relatedTarget = event.relatedTarget;
+				// button.parentElement.addEventListener(
+				// 	'focusout',
+				// 	function (event) {
+				// 		const dropdown      = this;
+				// 		const relatedTarget = event.relatedTarget;
 
-						// Check if the newly focused element is outside the dropdown
-						if ( ! dropdown.contains( relatedTarget )) {
-							dropdown.classList.remove( 'open' );
-							dropdown.querySelector( '.dropdown-toggle' ).setAttribute( 'aria-expanded', 'false' );
+				// 		// Check if the newly focused element is outside the dropdown
+				// 		if ( ! dropdown.contains( relatedTarget )) {
+				// 			dropdown.classList.remove( 'open' );
+				// 			dropdown.querySelector( '.dropdown-toggle' ).setAttribute( 'aria-expanded', 'false' );
+				// 		}
+				// 	}
+				// );
+
+				/**
+				 * Close the dropdown when tabbing away, we make following
+				 * considerations:
+				 * - If user is focused on the last element inside the dropdown,
+				 *  the dropdown will close when tabbing away.
+				 * - If user is focused on the first element inside the dropdown,
+				 *  the dropdown will close when tabbing away (using shift key).
+				 * 
+				 * We refer ally-collective for preffered solution:
+				 * @see https://www.a11y-collective.com/blog/mastering-web-accessibility-making-drop-down-menus-user-friendly/
+				 * 	Add awarness of when a user tabs out of the menu part 
+				 */
+
+				document.addEventListener('keydown', function (event) {
+					// handle tabbing
+					if (event.key === 'Tab') {
+						const dropdown = button.parentElement;
+						const currentFocusedElement = document.activeElement;
+						const inputCollection = dropdown.querySelectorAll('input');
+
+						const firstFocusableElement = inputCollection[0];
+						const lastFocusableElement = inputCollection[inputCollection.length - 1];
+
+						if (!event.shiftKey && currentFocusedElement === lastFocusableElement) {
+							// if tabbing forward ⏩ and focused on the last element, close the dropdown
+							dropdown.classList.remove('open');
+							dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+						} else if (event.shiftKey && currentFocusedElement === firstFocusableElement) {
+							// if tabbing backward ⏪ and focused on the first element, close the dropdown
+							dropdown.classList.remove('open');
+							dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
 						}
+					} 
+					// handle escaping 
+					else if (event.key === 'Escape') {
+						// close dropdowns when pressing the Escape key
+						const dropdown = button.parentElement;
+						dropdown.classList.remove('open');
+						dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
 					}
-				);
+				});
 			}
 		);
 
