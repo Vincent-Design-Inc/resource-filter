@@ -206,27 +206,116 @@ jQuery( document ).ready(
 document.addEventListener(
 	'DOMContentLoaded',
 	function () {
-		// Toggle dropdown visibility
+		//========== Functionality Variables ==========
+
+		// track current open dropdown
+		let currentlyOpenDropdown = null;
+
+		//========== Helper Functions ==========
+
+		/**
+		 * Open the dropdown and close any currently open dropdown
+		 * 
+		 * Note: Adds a global event listener for keydown to handle
+		 * tabbing and escaping. This is removed by the closDropdown
+		 * function when the dropdown is closed to prevent memory leaks.
+		 * 
+		 * @param {HTMLElement} dropdown 
+		 */
+		function openDropdown(dropdown) {
+			closeDropdown(); // Close any currently open dropdown
+			dropdown.classList.add('open');
+			dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'true');
+			currentlyOpenDropdown = dropdown;
+			document.addEventListener('keydown', (event) => handleKeyDown(event, dropdown));
+		}
+
+		/**
+		 * Close the currently open dropdown, if any.
+		 * 
+		 * Note: Remove the global event listener for keydown
+		 * to prevent memory leaks.
+		 * @param {HTMLElment} dropdown 
+		 */
+		function closeDropdown(dropdown) {
+			if (currentlyOpenDropdown) {
+				currentlyOpenDropdown.classList.remove('open');
+				currentlyOpenDropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+				currentlyOpenDropdown = null;
+
+				document.removeEventListener('keydown', (event) => handleKeyDown(event, dropdown));
+			}
+		}
+
+		/**
+		 * Close the dropdown when tabbing away, we make following
+		 * considerations:
+		 * - If user is focused on the last element inside the dropdown,
+		 *  the dropdown will close when tabbing away.
+		 * - If user is focused on the first element inside the dropdown,
+		 *  the dropdown will close when tabbing away (using shift key).
+		 * 
+		 * We refer ally-collective for preffered solution:
+		 * @see https://www.a11y-collective.com/blog/mastering-web-accessibility-making-drop-down-menus-user-friendly/
+		 * 	Add awarness of when a user tabs out of the menu part 
+		 */
+		function handleKeyDown(event, dropdown) {
+			// handle tabbing
+			if (event.key === 'Tab') {
+				const currentFocusedElement = document.activeElement;
+				const inputCollection = dropdown.querySelectorAll('input');
+
+				const firstFocusableElement = inputCollection[0];
+				const lastFocusableElement = inputCollection[inputCollection.length - 1];
+
+				if (!event.shiftKey && currentFocusedElement === lastFocusableElement) {
+					// if tabbing forward ⏩ and focused on the last element, close the dropdown
+					dropdown.classList.remove('open');
+					dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+				} else if (event.shiftKey && currentFocusedElement === firstFocusableElement) {
+					// if tabbing backward ⏪ and focused on the first element, close the dropdown
+					dropdown.classList.remove('open');
+					dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+				}
+			} 
+			// handle escaping 
+			else if (event.key === 'Escape') {
+				// close dropdowns when pressing the Escape key
+				dropdown.classList.remove('open');
+				dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
+			}
+		}
+
+		//========== Event Listeners ==========
+
+		// toggle dropdown visibility
 		document.querySelectorAll( '.custom-dropdown .dropdown-toggle' ).forEach(
 			function (button) {
 				button.addEventListener(
 					'click',
 					function () {
 						const dropdown = this.parentElement;
+						const isOpen = dropdown.classList.contains( 'open' );
+
+						if (isOpen) {
+							closeDropdown(dropdown);
+						} else {
+							openDropdown(dropdown);
+						}
 
 						// Close all other dropdowns and update aria-expanded
-						document.querySelectorAll( '.custom-dropdown' ).forEach(
-							function (otherDropdown) {
-								if (otherDropdown !== dropdown) {
-										otherDropdown.classList.remove( 'open' );
-										otherDropdown.querySelector( '.dropdown-toggle' ).setAttribute( 'aria-expanded', 'false' );
-								}
-							}
-						);
+						// document.querySelectorAll( '.custom-dropdown' ).forEach(
+						// 	function (otherDropdown) {
+						// 		if (otherDropdown !== dropdown) {
+						// 				otherDropdown.classList.remove( 'open' );
+						// 				otherDropdown.querySelector( '.dropdown-toggle' ).setAttribute( 'aria-expanded', 'false' );
+						// 		}
+						// 	}
+						// );
 
 						// Toggle the current dropdown and update aria-expanded
-						const isOpen = dropdown.classList.toggle( 'open' );
-						this.setAttribute( 'aria-expanded', isOpen ? 'true' : 'false' );
+						// const isOpen = dropdown.classList.toggle( 'open' );
+						// this.setAttribute( 'aria-expanded', isOpen ? 'true' : 'false' );
 					}
 				);
 
@@ -251,48 +340,6 @@ document.addEventListener(
 				// 		}
 				// 	}
 				// );
-
-				/**
-				 * Close the dropdown when tabbing away, we make following
-				 * considerations:
-				 * - If user is focused on the last element inside the dropdown,
-				 *  the dropdown will close when tabbing away.
-				 * - If user is focused on the first element inside the dropdown,
-				 *  the dropdown will close when tabbing away (using shift key).
-				 * 
-				 * We refer ally-collective for preffered solution:
-				 * @see https://www.a11y-collective.com/blog/mastering-web-accessibility-making-drop-down-menus-user-friendly/
-				 * 	Add awarness of when a user tabs out of the menu part 
-				 */
-
-				document.addEventListener('keydown', function (event) {
-					// handle tabbing
-					if (event.key === 'Tab') {
-						const dropdown = button.parentElement;
-						const currentFocusedElement = document.activeElement;
-						const inputCollection = dropdown.querySelectorAll('input');
-
-						const firstFocusableElement = inputCollection[0];
-						const lastFocusableElement = inputCollection[inputCollection.length - 1];
-
-						if (!event.shiftKey && currentFocusedElement === lastFocusableElement) {
-							// if tabbing forward ⏩ and focused on the last element, close the dropdown
-							dropdown.classList.remove('open');
-							dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
-						} else if (event.shiftKey && currentFocusedElement === firstFocusableElement) {
-							// if tabbing backward ⏪ and focused on the first element, close the dropdown
-							dropdown.classList.remove('open');
-							dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
-						}
-					} 
-					// handle escaping 
-					else if (event.key === 'Escape') {
-						// close dropdowns when pressing the Escape key
-						const dropdown = button.parentElement;
-						dropdown.classList.remove('open');
-						dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', 'false');
-					}
-				});
 			}
 		);
 
