@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.7 - 2025-07-30
+
+- Add feature to include content template inside the template override for active filters
+
 ## 1.6.6 - 2025-07-30
 
 - Fix click, focus and tabbing inside filter dropdowns
