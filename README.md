@@ -147,3 +147,4 @@ We welcome contributions! If you'd like to contribute to the Content Filter Plug
 ---
 
 For any issues or feature requests, please open an issue on the [GitHub repository](https://github.com/Vincent-Design-Inc/resource-filter).
+
