@@ -1,5 +1,7 @@
 <?php
-if (!defined('ABSPATH')) { exit; } // Prevent direct access
+if (!defined('ABSPATH')) {
+  exit;
+} // Prevent direct access
 
 // Get count from AJAX or direct POST
 global $postsTotal;
@@ -55,12 +57,21 @@ if (!empty($filters)) {
   <!-- Resource Count -->
   <p><strong>Showing <span id="result-count"><?php echo esc_html($count); ?></span> resource(s)</strong></p>
 
-  <div class="sort-filters flex items-start gap-4">
+  <div class="flex items-start gap-4 sort-filters">
     <!-- Applied Filters -->
     <p>
       <strong>Filters applied:</strong><br>
       <span id="applied-filters"><?php echo $filterHtml; ?></span>
     </p>
+
+    <!-- template for filters -->
+    <template id="filter-item-template">
+      <li class="filter-item" data-type="" data-value="">
+        <strong class="filter-label"></strong>
+        <span class="filter-value"></span>
+        <button class="remove-filter" aria-label="Remove filter">×</button>
+      </li>
+    </template>
 
     <!-- Add target element for focus on pagination scroll -->
     <h2 tabindex="-1" class="sr-only">Search Results</h2>

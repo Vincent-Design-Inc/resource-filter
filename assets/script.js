@@ -57,12 +57,28 @@ jQuery( document ).ready(
 					function (term) {
 						let taxName = toTitleCase( taxonomy );
 
-						appliedFilters.push(
-							`<span class = "filter-item" data-type = "${taxonomy}" data-value = "${term.value}">
-							<strong>${taxName}: </strong>${term.text}
-							<button class = "remove-filter" aria-label = "Remove ${term.text}">×</button>
-							</span>`
-						);
+						const filterItemTemplate = document.querySelector('#filter-item-template');
+
+						if (filterItemTemplate) { // use template if available
+							const newFilterItem = filterItemTemplate.content.cloneNode(true);
+							const serializer = new XMLSerializer();
+
+							newFilterItem.querySelector('.filter-item').dataset.type = taxonomy;
+							newFilterItem.querySelector('.filter-item').dataset.value = term.value;
+							newFilterItem.querySelector('.filter-label').innerHTML = `${taxName}: `;
+							newFilterItem.querySelector('.filter-value').textContent = term.text;
+
+							appliedFilters.push(serializer.serializeToString(newFilterItem));
+						} 
+						// fallback for older versions
+						else {
+							appliedFilters.push(
+								`<span class = "filter-item" data-type = "${taxonomy}" data-value = "${term.value}">
+								<strong>${taxName}: </strong>${term.text}
+								<button class = "remove-filter" aria-label = "Remove ${term.text}">×</button>
+								</span>`
+							);
+						}
 
 						dropdownFilters.push( term.text );
 
