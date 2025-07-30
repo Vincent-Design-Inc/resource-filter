@@ -46,6 +46,10 @@ The plugin is designed to work out of the box with minimal configuration. Howeve
 
 ## Changelog
 
+## 1.6.6 - 2025-07-30
+
+- Fix click, focus and tabbing inside filter dropdowns
+
 ## 1.6.5 - 2025-07-07
 
 - Fix error in script that caused code display breakage
