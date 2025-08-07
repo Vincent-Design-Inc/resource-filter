@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.8 - 2025-08-07
+
+- Fix queries to only show published posts
+
 ## 1.6.7 - 2025-07-30
 
 - Add feature to include content template inside the template override for active filters
