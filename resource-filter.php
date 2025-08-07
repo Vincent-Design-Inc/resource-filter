@@ -301,6 +301,7 @@ class ContentFilterPlugin {
       $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
       $query_args = [
+        'post_status'    => 'publish',
         'post_type'      => $postTypes,
         'posts_per_page' => $postCount,
         'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
@@ -317,6 +318,7 @@ class ContentFilterPlugin {
       return $query;
     } else {
       $query = new WP_Query([
+        'post_status'    => 'publish',
         'post_type'      => $postTypes,
         'posts_per_page' => $postCount,
         'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
@@ -386,6 +388,7 @@ class ContentFilterPlugin {
    */
   public function loadResources() {
     $query_args = [
+      'post_status'    => 'publish',
       'post_type'      => get_option('content_filter_post_types', ['post']),
       'posts_per_page' => get_option('content_filter_posts_per_page', 12),
       'paged'          => max(1, get_query_var('paged', 1)), // Get current page number
@@ -462,6 +465,7 @@ class ContentFilterPlugin {
     $sort_order = isset($_POST['sort_order']) ? sanitize_text_field($_POST['sort_order']) : 'date_desc';
 
     $query_args = [
+      'post_status'    => 'publish', // Ensure only published posts are queried
       'post_type'      => !empty($postTypes) ? $postTypes : ['post'],
       'posts_per_page' => $postCount,
       'paged'          => isset($_POST['paged']) ? intval($_POST['paged']) : 1, // Get current page number
